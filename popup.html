@@ -1,27 +1,21 @@
-<!-- The popup window for taking notes  -->
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Note Taking App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      width: 300px;
-    }
-    #note {
-      width: 100%;
-      height: 150px;
-    }
-    button {
-      width: 100%;
-      margin-top: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
 <body>
   <textarea id="note" placeholder="Enter your notes here..."></textarea>
   <button id="saveNote">Save Note</button>
+
+  <div id="savedNotes">
+    <h3>Saved Notes:</h3>
+    <div id="notesList"></div>
+  </div>
+
+  <script src="popup.js"></script>
 </body>
-<script src="popup.js"></script>
 </html>
