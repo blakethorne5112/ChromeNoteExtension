@@ -4,9 +4,13 @@
     "minimum_chrome_version": "120",
     "manifest_version": 3,
     "description": "A tool for taking effiicent notes from web pages",
-    "background": {
-      "service_worker": "sw.js"
+    "action": {
+      "default_popup": "popup.html"
     },
-    "permissions": ["readingList"],
-    "action": {}
+    "permissions": [
+      "activeTab"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    }
   }
