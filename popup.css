@@ -1,1 +1,110 @@
-/* TODO */
+/* General styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    width: 320px;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f7fa;
+    color: #333;
+  }
+  
+  /* Text area styling */
+  #note {
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: none;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+  }
+  
+  /* Button styling */
+  button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button#saveNote {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#saveNote:hover {
+    background-color: #45a049;
+  }
+  
+  /* Saved notes section */
+  #savedNotes {
+    margin-top: 20px;
+  }
+  
+  #savedNotes h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #444;
+  }
+  
+  /* Note item styling */
+  .noteItem {
+    background-color: #ffffff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .noteItem:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Note text */
+  .noteText {
+    flex-grow: 1;
+    padding-right: 10px;
+  }
+  
+  /* Icon button styling */
+  .icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .icon-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .icon-button i {
+    font-size: 16px;
+    color: #888;
+  }
+  
+  /* Delete button */
+  .icon-button.delete:hover i {
+    color: #ff5c5c;
+  }
+  
+  /* Edit button */
+  .icon-button.edit:hover i {
+    color: #4CAF50;
+  }
+  
