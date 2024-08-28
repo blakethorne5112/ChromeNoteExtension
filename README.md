@@ -1,10 +1,6 @@
-# chrome.readingList API
-
-This sample demonstrates using the [chrome.readingList](https://developer.chrome.com/docs/extensions/reference/readingList/) API to view items in the reading list.
-
 ## Overview
 
-The extension's action icon opens a page that allows you to add new items, as well as update or delete existing ones.
+The extension's action icon opens a page that allows you to create new notes, save them, edit them and delete them. 
 
 <img src="screenshot.png" height=300 alt="Screenshot showing the chrome.readingList API demo running in Chrome.">
 
