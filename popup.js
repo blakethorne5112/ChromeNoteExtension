@@ -87,5 +87,22 @@ function deleteNote(index) {
     });
 }
 
+// Function to scrape the page content and pre-fill the note input
+function scrapePageContent() {
+    chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
+        if (response && response.content) {
+            document.getElementById("note").value = response.content;
+        } else {
+            document.getElementById("note").value = "Could not scrape content.";
+        }
+    });
+}
+// Initialize the popup
+document.addEventListener('DOMContentLoaded', () => {
+    displaySavedNotes(); // function needs to be defined for displaying saved notes
+    scrapePageContent(); // Add this to pre-fill the note input with page content
+});
+
+
 // Display saved notes when the popup opens
 document.addEventListener('DOMContentLoaded', displaySavedNotes);
