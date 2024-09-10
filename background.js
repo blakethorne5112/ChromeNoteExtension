@@ -1,3 +1,5 @@
+//to do for further
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "extractText") {
         const pageText = message.text;
