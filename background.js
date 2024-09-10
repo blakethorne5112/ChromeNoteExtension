@@ -31,55 +31,42 @@ function scrapePageContent(callback) {
 
   
 // Implementation of AI text detection API (Sapling.ai) TO DO
-//The following does not work yet, needs to be worked on further
+//The following should work, but needs Node.js setup and axiom. Additionally, it only uses the terminal, so it must be changed to take input and give output to the extension UI
 /*
-import './App.css';
+// Import the axios library for making HTTP requests
+const axios = require('axios');
 
-import { useEffect } from 'react';
-import { Sapling } from "@saplingai/sapling-js/observer";
+// Function to check if the text is AI-generated using Sapling API
+async function checkForAIContent(text) {
+  try {
+    // Send a POST request to Sapling's AI detection API
+    const response = await axios.post(
+      'https://api.sapling.ai/api/v1/aidetect',
+      {
+        key: '<your-api-key>',  // Replace with your API key
+        text: text  // Text to analyze
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-function App() {
-  useEffect(() => {
-    Sapling.init({
-      endpointHostname: 'http://127.0.0.1:5000',
-      saplingPathPrefix: '/sapling',
-    });
-
-    const editor = document.getElementById('editor');
-    Sapling.observe(editor);
-
-    const button = document.getElementById('ai-detect-btn');
-    button.addEventListener('click', () => {
-      Sapling.checkOnce(editor, {aiDetect: true});
-    });
-  });
-
-  return (
-    <>
-      <div
-        id="editor"
-        sapling-ignore="true"
-        contentEditable="true"
-        style={{
-          margin: '40px auto',
-          padding: '10px',
-          border: '2px solid black',
-          width: '500px',
-        }}>
-        Phone chargers are essential accessories that have become an integral part of modern life. These devices are designed to replenish the battery life of our smartphones and other electronic gadgets, enabling us to stay connected and productive throughout the day. With advancements in technology, phone chargers have evolved significantly, offering various types such as wired, wireless, fast-charging, and portable chargers.
-        <br/><br/>
-        The convenience and versatility of phone chargers have revolutionized the way we use our devices, ensuring we can always stay powered up and connected in our fast-paced, digital world. Portable phone chargers, also known as power banks, have become a lifesaver for people on the go. These compact, battery-powered devices store electrical energy that can be used to charge our phones when an outlet is unavailable. Whether traveling, camping, or during emergencies, power banks ensure we are never left stranded with a dead phone battery.
-      </div>
-      <button id="ai-detect-btn" style={{
-          padding: '10px',
-          border: '2px solid black',
-          width: '500px',
-          height: '40px',
-          cursor: 'pointer',
-        }}>Check AI</button>
-    </>
-  );
+    // Parse and log the response data
+    const { status, data } = response;
+    console.log(`Status: ${status}`);
+    console.log('AI Detection Result:', JSON.stringify(data, null, 4));
+  } catch (err) {
+    // Handle errors
+    console.error('Error:', err.response ? err.response.data : err.message);
+  }
 }
 
-export default App;
+// Sample text to be analyzed for AI content
+const sampleText = 'This text is an example.';
+
+// Call the function to check AI content in the sample text
+checkForAIContent(sampleText);
+
 */
