@@ -1,32 +1,31 @@
-// TODO for future. Running background tasks
-
-chrome.runtime.onInstalled.addListener(() => {
-    console.log('Note Taking Extension Installed');
-  });
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    switch (message.action) {
-        case 'scrapePage':
-            scrapePageContent(sendResponse);
-            return true; // Indicates async response
+    if (message.action === "extractText") {
+        const pageText = message.text;
 
-        // Place for other actions
-
-        default:
-            console.warn(`Unhandled action: ${message.action}`);
+        // Call the backend server to summarize the text
+        fetch('http://localhost:5000/summarize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: pageText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.summary) {
+                chrome.runtime.sendMessage({
+                    action: "summarize",
+                    summary: data.summary
+                });
+            } else {
+                chrome.runtime.sendMessage({
+                    action: "summarize",
+                    summary: "Error: Could not summarize the text."
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error calling backend:", error);
+        });
     }
 });
-//function to scrape page content
-function scrapePageContent(callback) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            function: () => document.body.innerText
-        }, (results) => {
-            const content = (results && results[0] && results[0].result) || 'Failed to scrape content.';
-            callback({ content });
-        });
-    });
-}
-
-  
