@@ -97,12 +97,25 @@ function scrapePageContent() {
         }
     });
 }
+
+// Function to generate citation
+function generateCitation() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {action: "generateCitation"}, function(response) {
+            if (response && response.citation) {
+                document.getElementById("citationResult").textContent = response.citation;
+            } else {
+                document.getElementById("citationResult").textContent = "Could not generate citation.";
+            }
+        });
+    });
+}
+
 // Initialize the popup
 document.addEventListener('DOMContentLoaded', () => {
-    displaySavedNotes(); // function needs to be defined for displaying saved notes
-    scrapePageContent(); // Add this to pre-fill the note input with page content
+    displaySavedNotes();
+    scrapePageContent();
+    
+    // Add event listener for citation generation
+    document.getElementById("generateCitation").addEventListener("click", generateCitation);
 });
-
-
-// Display saved notes when the popup opens
-document.addEventListener('DOMContentLoaded', displaySavedNotes);
