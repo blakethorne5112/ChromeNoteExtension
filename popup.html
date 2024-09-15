@@ -7,15 +7,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
+  
 <body>
-  <textarea id="note" placeholder="Enter your notes here..."></textarea>
+  
+  <form method="get" id="voice-form" target="_blank">
+    <textarea id="note" placeholder="Enter your notes here..."></textarea>
+    
+  </form>
+  
   <button id="saveNote">Save Note</button>
+  
 
   <div id="savedNotes">
     <h3>Saved Notes:</h3>
     <div id="notesList"></div>
   </div>
+  
 
-  <script src="popup.js"></script>
-</body>
+<script src="popup.js"></script>
+  </body>
 </html>
