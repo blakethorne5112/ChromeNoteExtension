@@ -97,6 +97,12 @@ function scrapePageContent() {
         }
     });
 }
+function displayScrapedContent() {
+    chrome.runtime.sendMessage({ action: 'getScrapedContent' }, (response) => {
+        console.log('Stored scraped content:', response);
+    });
+}
+
 // Initialize the popup
 document.addEventListener('DOMContentLoaded', () => {
     displaySavedNotes(); // function needs to be defined for displaying saved notes
