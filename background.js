@@ -9,7 +9,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case 'scrapePage':
             scrapePageContent(sendResponse);
             return true; // Indicates async response
-
+        
+        case 'getScrapedContent':
+            sendResponse({ contentList: contentList }); // Assuming contentList is stored globally
+            return true;
+            
         // Place for other actions
 
         default:
