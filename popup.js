@@ -106,3 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Display saved notes when the popup opens
 document.addEventListener('DOMContentLoaded', displaySavedNotes);
+
+//AI detection function
+document.getElementById('detectBtn').addEventListener('click', async () => {
+    const textToAnalyze = document.getElementById('textToAnalyze').value;
+    
+    // Call the background script to make the API request
+    chrome.runtime.sendMessage({ text: textToAnalyze, action: "aiDetection" }, function (response) {
+      if (response && response.result) {
+        document.getElementById('aiResult').textContent = 
+          `AI Score: ${response.result.score}`;
+      } else {
+        document.getElementById('aiResult').textContent = 
+          'Error detecting AI content';
+      }
+    });
+  });
+  
