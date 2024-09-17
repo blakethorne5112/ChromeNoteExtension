@@ -1,4 +1,5 @@
 // TODO for future. Running background tasks
+let contentList = []; 
 
 chrome.runtime.onInstalled.addListener(() => {
     console.log('Note Taking Extension Installed');
@@ -11,7 +12,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return true; // Indicates async response
         
         case 'getScrapedContent':
-            sendResponse({ contentList: contentList }); // Assuming contentList is stored globally
+            sendResponse({ contentList }); // Assuming contentList is stored globally
             return true;
             
         // Place for other actions
@@ -28,7 +29,7 @@ function scrapePageContent(callback) {
             function: () => document.body.innerText
         }, (results) => {
             const content = (results && results[0] && results[0].result) || 'Failed to scrape content.';
-            const contentList = content.split('\n').filter(line => line.trim() !== "");
+            contentList = content.split('\n').filter(line => line.trim() !== "");
             callback({ contentList });
         });
     });
