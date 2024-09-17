@@ -24,9 +24,8 @@ function scrapePageContent(callback) {
             function: () => document.body.innerText
         }, (results) => {
             const content = (results && results[0] && results[0].result) || 'Failed to scrape content.';
-            callback({ content });
+            const contentList = content.split('\n').filter(line => line.trim() !== "");
+            callback({ contentList });
         });
     });
 }
-
-  
