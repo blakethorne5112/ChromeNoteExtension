@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.warn(`Unhandled action: ${message.action}`);
     }
 });
-//function to scrape page content
+// scrape page content
 function scrapePageContent(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.scripting.executeScript({

@@ -98,7 +98,7 @@ function scrapePageContent() {
     });
 }
 
-// Function to generate citation
+// generate citation
 function generateCitation() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {action: "generateCitation"}, function(response) {
@@ -111,11 +111,11 @@ function generateCitation() {
     });
 }
 
-// Initialize the popup
+// initialize popup
 document.addEventListener('DOMContentLoaded', () => {
     displaySavedNotes();
     scrapePageContent();
     
-    // Add event listener for citation generation
+    // event listener for citation generation
     document.getElementById("generateCitation").addEventListener("click", generateCitation);
 });
