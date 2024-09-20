@@ -1,11 +1,26 @@
-    },
+{
+    "manifest_version": 3,
+    "name": "Note Taking Web Summarizer",
+    "version": "1.0",
+    "description": "A Chrome extension for taking notes and summarizing content from web pages.",
     "permissions": [
-      "activeTab",
-      "storage",
-      "scripting"
+        "activeTab",
+        "storage"
     ],
     "background": {
-      "service_worker": "background.js"
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "images/icon16.png",
+            "48": "images/icon48.png",
+            "128": "images/icon128.png"
+        }
+    },
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
     }
-  }
-  }
+}
