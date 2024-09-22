@@ -90,19 +90,17 @@ function deleteNote(index) {
 // Function to scrape the page content and pre-fill the note input
 function scrapePageContent() {
     chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
-        if (response && response.content) {
-            document.getElementById("note").value = response.content;
+        if (response && response.contentList) {
+            const contentString = response.contentList.join('\n');
+            document.getElementById("note").value = contentString;
         } else {
             document.getElementById("note").value = "Could not scrape content.";
         }
     });
 }
+
 // Initialize the popup
 document.addEventListener('DOMContentLoaded', () => {
-    displaySavedNotes(); // function needs to be defined for displaying saved notes
-    scrapePageContent(); // Add this to pre-fill the note input with page content
+    displaySavedNotes(); // Display saved notes
+    scrapePageContent(); // Pre-fill the note input with scraped content
 });
-
-
-// Display saved notes when the popup opens
-document.addEventListener('DOMContentLoaded', displaySavedNotes);
