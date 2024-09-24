@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -10,11 +10,22 @@
   
 <body>
   
-  <form method="get" id="voice-form" target="_blank">
+
+  
+  
+
     <textarea id="note" placeholder="Enter your notes here..."></textarea>
     
-  </form>
   
+    <form method="get" id="voiceForm" target="_blank">
+      <textarea type="text" id = "voice-text" placeholder="Speak after pressing mic button" autocomplete="off" autofocus></textarea> 
+    </form>
+
+
+    <button id="transcribe-video">Transcribe Video</button>
+
+
+
   <button id="saveNote">Save Note</button>
   
 

@@ -110,59 +110,77 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', displaySavedNotes);
 
 
-const searchForm = document.querySelector("#voice-form");
-const searchFormTextArea = searchForm.querySelector("#note");
 
-const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-if(speechRecognition) {
+document.addEventListener("DOMContentLoaded", function () {
 
-    searchForm.insertAdjacentHTML("beforeend", '<button type="button"><i class="fas fa-microphone"></i></button>');
-    const micBtn = searchForm.querySelector("button");
-    const micIcon = micBtn.querySelector("i");
+    const voiceForm = document.querySelector("#voiceForm");
+    const voiceInput = voiceForm.querySelector("#voice-text");
     
-    const recognition = new speechRecognition();
-    recognition.continuous = true;
-
-    micBtn.addEventListener("click", micBtnClick);
-    function micBtnClick() {
-        if(micIcon.classList.contains("fa-microphone")) {
-            // Start Speech Recognition
-            recognition.start();
+    const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if(speechRecognition) {
+        console.log("Your Browser supports speech Recognition");
+    
+        voiceForm.insertAdjacentHTML("beforeend", '<button type="button"><i class="fas fa-microphone"></i></button>');
+        voiceForm.insertAdjacentHTML("beforeend", '<button id="reset-button" type="reset">Reset</button>');
+        
+        const micBtn = voiceForm.querySelector("button");
+        const micIcon = micBtn.querySelector("i");
+    
+        const recognition = new speechRecognition();
+        recognition.continuous = true;
+    
+        micBtn.addEventListener("click", micBtnClick);
+        function micBtnClick() {
+            if(micIcon.classList.contains("fa-microphone")) {
+                // Start Speech Recognition
+                
+                recognition.start();
+            }
+    
+            else {
+                // Stop speech recongition
+                recognition.stop();
+    
+                console.log(recognition);
+    
+            }
         }
-
-        else {
-            // Stop speech recongition
-            recognition.stop();
-
+        
+        recognition.addEventListener("start", startSpeechRecognition); 
+        function startSpeechRecognition() {
+            micIcon.classList.remove("fa-microphone");
+            micIcon.classList.add("fa-microphone-slash");
+            voiceInput.focus();
+            console.log("Speech Recognition Active")
         }
+    
+        recognition.addEventListener("end", endSpeechRecognition); 
+        function endSpeechRecognition() {
+            micIcon.classList.remove("fa-microphone-slash");
+            micIcon.classList.add("fa-microphone")
+            voiceInput.focus();
+            console.log("Speech Recognition Inactive")
+        }
+    
+        recognition.addEventListener("result", resultOfSpeechRecognition);
+        function resultOfSpeechRecognition(event) {
+            console.log(event);
+            const currentResultIndex = event.resultIndex;
+            const transcript = event.results[currentResultIndex][0].transcript;
+            voiceInput.value += transcript;
+        }
+    
+        recognition.addEventListener("error", (event) => {
+            console.log("Speech recognition error: ", event.error);
+        });
+    }   
+    
+    else {
+        console.log("Your Browser does not support speech Recognition");
     }
 
-    recognition.addEventListener("start", startSpeechRecognition); 
-    function startSpeechRecognition() {
-        micIcon.classList.remove("fa-microphone");
-        micIcon.classList.add("fa-microphone-slash");
-        searchFormTextArea.focus();
-        console.log("Speech Recognition Active")
-    }
-    
-    recognition.addEventListener("end", endSpeechRecognition); 
-    function endSpeechRecognition() {
-        micIcon.classList.remove("fa-microphone-slash");
-        micIcon.classList.add("fa-microphone")
-        searchFormTextArea.focus();
-        console.log("Speech Recognition Inactive")
-    }
-    
-    recognition.addEventListener("result", resultOfSpeechRecognition);
-    function resultOfSpeechRecognition(event) {
-        console.log(event);
-        const currentResultIndex = event.resultIndex;
-        const transcript = event.results[currentResultIndex][0].transcript;
-        searchFormTextArea.value += transcript;
-    }
-}
+})
 
-else {
-    console.log("Your Browser does not support speech Recognition");
-}
+
