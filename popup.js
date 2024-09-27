@@ -87,17 +87,38 @@ function deleteNote(index) {
     });
 }
 
-// Function to scrape the page content and pre-fill the note input
+// Function to scrape the text content of the current page
 function scrapePageContent() {
-    chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
-        if (response && response.contentList) {
-            const contentString = response.contentList.join('\n');
-            document.getElementById("note").value = contentString;
-        } else {
-            document.getElementById("note").value = "Could not scrape content.";
-        }
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.scripting.executeScript({
+      target: { tabId: tabs[0].id },
+      function: () => {
+        // Extract text content from the entire document
+        let pageText = document.body.innerText;
+        return pageText.split(/\s+/).filter(Boolean); // Split into words and remove empty strings
+      }
+    }, (results) => {
+      if (results && results[0].result) {
+        // Store the scraped content as an array of strings (words)
+        let scrapedContent = results[0].result;
+        console.log("Scraped Content: ", scrapedContent);
+        // Store or send the scraped content to be used by other features
+        storeScrapedContent(scrapedContent);
+      }
     });
+  });
 }
+
+// Function to store the scraped content (could be used by others)
+function storeScrapedContent(contentArray) {
+  // Store in local storage (or send it to background.js for further handling)
+  chrome.storage.local.set({ scrapedContent: contentArray }, () => {
+    console.log('Scraped content saved.');
+  });
+}
+
+// Add event listener for the "Scrape Page Content" button
+document.getElementById("scrapeContent").addEventListener("click", scrapePageContent);
 
 // Initialize the popup
 document.addEventListener('DOMContentLoaded', () => {
