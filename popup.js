@@ -86,7 +86,6 @@ function deleteNote(index) {
         });
     });
 }
-
 // Function to scrape the text content of the current page
 function scrapePageContent() {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -119,9 +118,3 @@ function storeScrapedContent(contentArray) {
 
 // Add event listener for the "Scrape Page Content" button
 document.getElementById("scrapeContent").addEventListener("click", scrapePageContent);
-
-// Initialize the popup
-document.addEventListener('DOMContentLoaded', () => {
-    displaySavedNotes(); // Display saved notes
-    scrapePageContent(); // Pre-fill the note input with scraped content
-});
