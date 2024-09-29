@@ -3,7 +3,6 @@ let contentList = [];
 chrome.runtime.onInstalled.addListener(() => {
     console.log('Note Taking Extension Installed');
 });
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case 'scrapePage':
