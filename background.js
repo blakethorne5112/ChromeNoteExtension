@@ -17,6 +17,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.warn(`Unhandled action: ${message.action}`);
     }
 });
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && /^https?:/.test(tab.url)) {
+    // Inject the content script when the tab is updated and fully loaded
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ['popup.js']  // Inject the modified popup.js that contains scrapePageContent
+    });
+  }
+});
 
 // Function to scrape page content
 function scrapePageContent(callback) {
