@@ -116,5 +116,5 @@ function storeScrapedContent(contentArray) {
   });
 }
 
-// Add event listener for the "Scrape Page Content" button
-document.getElementById("scrapeContent").addEventListener("click", scrapePageContent);
+// Automatically run the scrapePageContent function when the content script is injected
+scrapePageContent();
