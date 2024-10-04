@@ -1,40 +1,43 @@
-<!-- <!DOCTYPE html> -->
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Note Taking App</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" type="text/css" href="popup.css">
-</head>
-  
-<body>
-  
-
-  
-  
-
-    <textarea id="note" placeholder="Enter your notes here..."></textarea>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Taking App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="popup.css">
+  </head>
     
-  
-    <form method="get" id="voiceForm" target="_blank">
-      <textarea type="text" id = "voice-text" placeholder="Speak after pressing mic button" autocomplete="off" autofocus></textarea> 
-    </form>
+
+  <body>
+
+      <textarea id="note" placeholder="Enter your notes here..."></textarea>
+      
+    
+      <form method="get" id="voiceForm" target="_blank">
+        <textarea type="text" id = "voice-text" placeholder="Speak after pressing mic icon" autocomplete="off" autofocus></textarea> 
+      </form>
 
 
-    <button id="transcribe-video">Transcribe Video</button>
+      <!-- <textarea type="text" id="trascribed-text" placeholder="Click the Transcribe icon for transcription to begin" ></textarea> -->
+
+      <button id = "transcribe-youtube-video" type = "button">Transcribe Youtube Video</button>
+      <br/>
+      <textarea id = "output"></textarea>
+
+      <button id="saveNote">Save Note</button>
 
 
+      <div id="savedNotes">
+        <h3>Saved Notes:</h3>
+        <div id="notesList"></div>
+      </div>
 
-  <button id="saveNote">Save Note</button>
-  
+    
 
-  <div id="savedNotes">
-    <h3>Saved Notes:</h3>
-    <div id="notesList"></div>
-  </div>
-  
+    <script src = "transcriber.js" type="module"></script>
 
-<script src="popup.js"></script>
+    <script src="popup.js"></script>
+
   </body>
 </html>

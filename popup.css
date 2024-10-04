@@ -107,4 +107,8 @@ body {
   .icon-button.edit:hover i {
     color: #4CAF50;
   }
+
+  p {
+    font-size: medium;
+  }
   
