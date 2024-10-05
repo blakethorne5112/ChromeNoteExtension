@@ -41,6 +41,15 @@ body {
   button#saveNote:hover {
     background-color: #45a049;
   }
+
+  button#generateCitation {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#generateCitation:hover {
+    background-color: #45a049;
+  }
   
   /* Saved notes section */
   #savedNotes {
@@ -76,6 +85,12 @@ body {
       padding-right: 20px; /* Increase padding on the right */
       word-wrap: break-word; /* Ensure long text wraps */
   }
+
+  .citationResult {
+    padding-top: 10px;
+    flex-grow: 1;
+    word-wrap: break-word; /* Ensure long text wraps */
+}
   
   .noteItem:hover {
     background-color: #f0f0f0;
