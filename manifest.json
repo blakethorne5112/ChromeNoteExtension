@@ -3,9 +3,6 @@
   "version": "1.0",
   "manifest_version": 3,
   "description": "A tool for taking efficient notes from web pages",
-  "action": {
-    "default_popup": "popup.html"
-  },
   "permissions": [
     "storage",
     "activeTab",
@@ -23,5 +20,8 @@
       "matches": ["<all_urls>"],
       "js": ["popup.js"]
     }
+  ],
+  "host_permissions": [
+    "*://*/*"
   ]
 }

@@ -1,5 +1,15 @@
 let editingIndex = -1; // This will track if the user is editing an existing note
 
+function ensureContentScriptInjected(tabId, callback) {
+    chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content.js']
+    }, () => {
+        // Call the callback function after the script is injected
+        if (callback) callback();
+    });
+}
+
 // Function to save or update a note
 document.getElementById("saveNote").addEventListener("click", function() {
     const note = document.getElementById("note").value;
@@ -107,6 +117,37 @@ function scrapePageContent() {
     });
   });
 }
+
+// generate citation
+function generateCitation() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        const tabId = tabs[0].id;
+
+        // Ensure the content script is injected before sending the message
+        ensureContentScriptInjected(tabId, () => {
+            chrome.tabs.sendMessage(tabId, {action: "generateCitation"}, function(response) {
+                if (chrome.runtime.lastError) {
+                    console.error("Error sending message to content script:", chrome.runtime.lastError.message);
+                    document.getElementById("citationResult").textContent = "Could not generate citation.";
+                } else if (response && response.citation) {
+                    document.getElementById("citationResult").textContent = response.citation;
+                } else {
+                    document.getElementById("citationResult").textContent = "Could not generate citation.";
+                }
+            });
+        });
+    });
+  });
+}
+
+// initialize popup
+document.addEventListener('DOMContentLoaded', () => {
+    displaySavedNotes();
+    scrapePageContent();
+    
+    // event listener for citation generation
+    document.getElementById("generateCitation").addEventListener("click", generateCitation);
+});
 
 // Function to store the scraped content (could be used by others)
 function storeScrapedContent(contentArray) {
