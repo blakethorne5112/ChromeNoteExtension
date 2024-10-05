@@ -118,7 +118,7 @@ function scrapePageContent() {
   });
 }
 
-// generate citation
+// Function to generate citation
 function generateCitation() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         const tabId = tabs[0].id;
@@ -137,7 +137,6 @@ function generateCitation() {
             });
         });
     });
-  });
 }
 
 // initialize popup
