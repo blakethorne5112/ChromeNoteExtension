@@ -1,5 +1,15 @@
 let editingIndex = -1; // This will track if the user is editing an existing note
 
+function ensureContentScriptInjected(tabId, callback) {
+    chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content.js']
+    }, () => {
+        // Call the callback function after the script is injected
+        if (callback) callback();
+    });
+}
+
 // Function to save or update a note
 document.getElementById("saveNote").addEventListener("click", function() {
     const note = document.getElementById("note").value;
@@ -86,27 +96,45 @@ function deleteNote(index) {
         });
     });
 }
-
-// Function to scrape the page content and pre-fill the note input
+// Function to scrape the text content of the current page
 function scrapePageContent() {
-    chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
-        if (response && response.content) {
-            document.getElementById("note").value = response.content;
-        } else {
-            document.getElementById("note").value = "Could not scrape content.";
-        }
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.scripting.executeScript({
+      target: { tabId: tabs[0].id },
+      function: () => {
+        // Extract text content from the entire document
+        let pageText = document.body.innerText;
+        return pageText.split(/\s+/).filter(Boolean); // Split into words and remove empty strings
+      }
+    }, (results) => {
+      if (results && results[0].result) {
+        // Store the scraped content as an array of strings (words)
+        let scrapedContent = results[0].result;
+        console.log("Scraped Content: ", scrapedContent);
+        // Store or send the scraped content to be used by other features
+        storeScrapedContent(scrapedContent);
+      }
     });
+  });
 }
 
 // generate citation
 function generateCitation() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: "generateCitation"}, function(response) {
-            if (response && response.citation) {
-                document.getElementById("citationResult").textContent = response.citation;
-            } else {
-                document.getElementById("citationResult").textContent = "Could not generate citation.";
-            }
+        const tabId = tabs[0].id;
+
+        // Ensure the content script is injected before sending the message
+        ensureContentScriptInjected(tabId, () => {
+            chrome.tabs.sendMessage(tabId, {action: "generateCitation"}, function(response) {
+                if (chrome.runtime.lastError) {
+                    console.error("Error sending message to content script:", chrome.runtime.lastError.message);
+                    document.getElementById("citationResult").textContent = "Could not generate citation.";
+                } else if (response && response.citation) {
+                    document.getElementById("citationResult").textContent = response.citation;
+                } else {
+                    document.getElementById("citationResult").textContent = "Could not generate citation.";
+                }
+            });
         });
     });
 }
@@ -119,3 +147,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // event listener for citation generation
     document.getElementById("generateCitation").addEventListener("click", generateCitation);
 });
+
+// Function to store the scraped content (could be used by others)
+function storeScrapedContent(contentArray) {
+  // Store in local storage (or send it to background.js for further handling)
+  chrome.storage.local.set({ scrapedContent: contentArray }, () => {
+    console.log('Scraped content saved.');
+  });
+}
+
+// Automatically run the scrapePageContent function when the content script is injected
+scrapePageContent();
