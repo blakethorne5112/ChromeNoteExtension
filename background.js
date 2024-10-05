@@ -8,8 +8,6 @@ function ensureContentScriptInjected(tabId, callback) {
     });
 }
 
-// ... existing code ...
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case 'scrapePage':
@@ -49,9 +47,6 @@ function generateCitation(callback) {
         });
     });
 }
-
-// ... existing code ...
-
 
 let contentList = []; 
 
