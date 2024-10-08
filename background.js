@@ -13,32 +13,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Place for other actions
         case 'aiDetection':
             {
-                const apiKey = 'api-key'; // Replace with your Sapling API key
+                const apiKey = "api-key"; // Replace with your Sapling API key
 
                 try {
-                    return new Promise(async (resolve, reject) => {
-                    const response = await fetch('https://api.sapling.ai/api/v1/aidetect', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            key: apiKey,
-                            text: message.text
-                        })
-                    });
+                    (async () => {
+                        const response = await fetch('https://api.sapling.ai/api/v1/aidetect', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                key: apiKey,
+                                text: message.text
+                            })
+                        });
 
-                    const result = await response.json();
-                    sendResponse({ result: result });
-                    return resolve;
-                });
+                        const result = await response.json();
+                        sendResponse({ result: result });
+                    })();
                 } catch (error) {
                     console.error('Error:', error);
                     sendResponse({ error: 'Failed to detect AI content' });
                 }
 
-                
-                return false;
+                return true;
             }
 
         default:

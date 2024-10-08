@@ -114,8 +114,12 @@ document.getElementById('detectBtn').addEventListener('click', async () => {
     // Call the background script to make the API request
     chrome.runtime.sendMessage({ text: textToAnalyze, action: "aiDetection" }, function (response) {
       if (response && response.result) {
+        const score = response.result.score; // Your score
+
+        // Calculate percentage
+        const percentage = score * 100;
         document.getElementById('aiResult').textContent = 
-          `AI Score: ${response.result.score}`;
+          `AI Score: ${percentage.toFixed(2)}%`;
       } else {
         document.getElementById('aiResult').textContent = 
           'Error detecting AI content';
