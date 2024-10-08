@@ -10,7 +10,7 @@ body {
   
   /* Text area styling */
   #note {
-    width: 100%;
+    width: 90%;
     height: 120px;
     padding: 10px;
     margin-bottom: 15px;
@@ -24,7 +24,6 @@ body {
   
   /* Button styling */
   button {
-    width: 100%;
     padding: 10px;
     margin-top: 10px;
     border: none;
@@ -40,6 +39,15 @@ body {
   }
   
   button#saveNote:hover {
+    background-color: #45a049;
+  }
+
+  button#generateCitation {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#generateCitation:hover {
     background-color: #45a049;
   }
   
@@ -67,24 +75,31 @@ body {
     justify-content: space-between;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 100%; /* Make the note item take up full width */
+    box-sizing: border-box; /* Ensure padding is included in the width calculation */
+}
+
+  .noteText {
+      flex-grow: 1;
+      padding-left: 20px;  /* Add more padding on the left */
+      padding-right: 20px; /* Increase padding on the right */
+      word-wrap: break-word; /* Ensure long text wraps */
   }
+
+  .citationResult {
+    padding-top: 10px;
+    flex-grow: 1;
+    word-wrap: break-word; /* Ensure long text wraps */
+}
   
   .noteItem:hover {
     background-color: #f0f0f0;
   }
   
-  /* Note text */
-  .noteText {
-    flex-grow: 1;
-    padding-right: 10px;
-  }
-  
   /* Icon button styling */
   .icon-button {
-    background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
     border-radius: 3px;
     transition: background-color 0.3s ease;
   }
