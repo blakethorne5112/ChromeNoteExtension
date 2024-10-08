@@ -141,6 +141,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for citation generation
     document.getElementById("generateCitation").addEventListener("click", generateCitation);
+
+
+    const plagiarismButton = document.getElementById("checkPlagiarism");
+    if (plagiarismButton) {
+        plagiarismButton.addEventListener("click", function() {
+            chrome.runtime.sendMessage({ action: 'checkPlagiarism' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Error generating plagerism result:", chrome.runtime.lastError.message);
+                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                } else if (response && response.plagiarism) {
+                    document.getElementById("plagiarismResult").textContent = response.plagiarism;
+                } else {
+                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                }
+            });
+        });
+    }
 });
 
 // Function to store the scraped content

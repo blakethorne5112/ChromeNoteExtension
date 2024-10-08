@@ -1,4 +1,5 @@
-let apiKey, searchId;
+apiKey = 'replace'
+searchId = 'replace';
 
 chrome.storage.local.get(['apiKey', 'searchEngineId'], (result) => {
     apiKey = result.apiKey;
@@ -13,35 +14,14 @@ chrome.storage.local.get(['apiKey', 'searchEngineId'], (result) => {
 //4. If over a certain percentage, flag the sentence as plagiarized
 //5. Return the flagged sentences
 
-
-// Send message to background.js to check plagiarism for button clicks 
-document.addEventListener('DOMContentLoaded', () => {
-    const plagiarismButton = document.getElementById("checkPlagiarism");
-    
-    if (plagiarismButton) {
-        plagiarismButton.addEventListener("click", function() {
-            chrome.runtime.sendMessage({ action: 'checkPlagiarism' }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error generating plagerism result:", chrome.runtime.lastError.message);
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
-                } else if (response && response.citation) {
-                    document.getElementById("plagiarismResult").textContent = response.citation;
-                } else {
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
-                }
-            });
-        });
-    }
-});
-
 // Listens for messages from background.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    switch (message.action) {
-        case 'checkPlagiarismJS':
-            sendResponse({ plagiarism: "TESTS"});
-        default:
-            console.warn(`Unhandled action: ${message.action}`);
+    if (message.action === "checkPlagiarism") {
+        var plagiarisedText = "This is a test";
+        //plagiarisedText = checkPlagiarism();
+        sendResponse({ plagiarism: plagiarisedText });
     }
+    return true;
 });
 
 function checkPlagiarism() {
