@@ -1,6 +1,9 @@
-require('dotenv').config();
-const apiKey = process.env.API_KEY;
-const searchId = process.env.SEARCH_ENGINE_ID;
+let apiKey, searchId;
+
+chrome.storage.local.get(['apiKey', 'searchEngineId'], (result) => {
+    apiKey = result.apiKey;
+    searchId = result.searchEngineId;
+});
 
 //PROCESS:
 //1. Get the text from the HTML scraper
@@ -10,22 +13,63 @@ const searchId = process.env.SEARCH_ENGINE_ID;
 //4. If over a certain percentage, flag the sentence as plagiarized
 //5. Return the flagged sentences
 
-const data = getHTML();
-const text = splitText(data);
-if(text != 0){
-    // Create map of sentences to their respective links and snippets
-    text.forEach(sentence => {
-        if(checkSimilarity(sentence) != 0){
-            //If the sentence is plagiarised, add it to the map
-            //map = {sentence: [link, snippet]}
-        };
-    });
-    //Return the map    
+
+// Send message to background.js to check plagiarism for button clicks 
+document.addEventListener('DOMContentLoaded', () => {
+    const plagiarismButton = document.getElementById("checkPlagiarism");
+    
+    if (plagiarismButton) {
+        plagiarismButton.addEventListener("click", function() {
+            chrome.runtime.sendMessage({ action: 'checkPlagiarism' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Error generating plagerism result:", chrome.runtime.lastError.message);
+                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                } else if (response && response.citation) {
+                    document.getElementById("plagiarismResult").textContent = response.citation;
+                } else {
+                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                }
+            });
+        });
+    }
+});
+
+// Listens for messages from background.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    switch (message.action) {
+        case 'checkPlagiarismJS':
+            sendResponse({ plagiarism: "TESTS"});
+        default:
+            console.warn(`Unhandled action: ${message.action}`);
+    }
+});
+
+function checkPlagiarism() {
+    console.log("Checking plagiarism...");
+    const data = getHTML();
+    const text = splitText(data);
+    if(text != 0){
+        // Create map of paragraphs to their respective links and snippets
+        const plagiarisedText = new Map();
+        text.forEach(paragraph => {
+            var sim = checkSimilarity(paragraph)
+            if(sim != 0){
+                // print to console sim
+                console.log(sim);
+                //If the paragraph is plagiarised, add it to the map
+                //map = {paragraph: [link, snippet]}
+                const similarityText = sim.split(',');
+                const link = similarityText[0];
+                const snippet = similarityText[1];
+                plagiarisedText.set(link, snippet);
+            };
+        });
+        return plagiarisedText;    
+    }
 }
 
-
-async function checkSimilarity(text) {
-    const data = await searchGoogle(text);
+function checkSimilarity(text) {
+    const data = searchGoogle(text);
     // Google returns a JSON of search results that are stored as 'items'
     const items = data.items;
     // These items have fields such as 'snippet' which contain a brief snippet from the webpage 
@@ -39,10 +83,10 @@ async function checkSimilarity(text) {
     return 0;
 }
 
-async function searchGoogle(query) {
+function searchGoogle(query) {
     const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchId}:omuauf_lfve&q=${query}`;
-    const response = await fetch(url);
-    const data = await response.json();
+    const response =  fetch(url);
+    const data =  response.json();
     return data;
 }
 
@@ -61,7 +105,9 @@ function compareText(text, snippets) {
     return similarity * 100;
 }
 
+
 async function getHTML(data){
+    return 'Death Note (stylized in all caps) is a Japanese manga series written by Tsugumi Ohba and illustrated by Takeshi Obata. It was serialized in Shueishas shōnen manga magazine Weekly Shōnen Jump from December 2003 to May 2006, with its chapters collected in 12 tankōbon volumes. The story follows Light Yagami, a genius high school student who discovers a mysterious notebook: the "Death Note", which belonged to the shinigami Ryuk, and grants the user the supernatural ability to kill anyone whose name is written in its pages.'
     //Get text from HTML scraper for query
 }
 
@@ -82,5 +128,5 @@ function splitText(text){
         paragraphs.push(sentences.slice(i, i + 3).join('. ') + '.');
         // This results in less search queries and more coherent search results
     }
+    return paragraphs;
 }
-
