@@ -1,31 +1,52 @@
-let editingIndex = -1; // This will track if the user is editing an existing note
+editingIndex = -1; // This will track if the user is editing an existing note
 
 // Function to save or update a note
-document.getElementById("saveNote").addEventListener("click", function() {
-    const note = document.getElementById("note").value;
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if the element exists before adding the event listener
+    const saveNoteButton = document.getElementById("saveNote");
+    
+    if (saveNoteButton) {
+        saveNoteButton.addEventListener("click", function() {
+            const note = document.getElementById("note").value;
 
-    chrome.storage.local.get({userNotes: []}, function(result) {
-        const notes = result.userNotes;
+            chrome.storage.local.get({userNotes: []}, function(result) {
+                const notes = result.userNotes;
 
-        if (editingIndex >= 0) {
-            // If editing an existing note, update it
-            notes[editingIndex] = note;
-            editingIndex = -1; // Reset the editing index after saving
-        } else {
-            // Otherwise, add a new note
-            notes.push(note);
-        }
+                if (editingIndex >= 0) {
+                    // If editing an existing note, update it
+                    notes[editingIndex] = note;
+                    editingIndex = -1; // Reset the editing index after saving
+                } else {
+                    // Otherwise, add a new note
+                    notes.push(note);
+                }
 
-        // Save the updated notes array
-        chrome.storage.local.set({userNotes: notes}, function() {
-            console.log("Note saved!");
-            displaySavedNotes();
+                // Save the updated notes array
+                chrome.storage.local.set({userNotes: notes}, function() {
+                    console.log("Note saved!");
+                    displaySavedNotes();
+                });
+            });
+
+            // Clear the note input after saving
+            document.getElementById("note").value = '';
         });
-    });
+    } else {
+        console.error("Save Note button not found!");
+    }
 
-    // Clear the note input after saving
-    document.getElementById("note").value = '';
+    displaySavedNotes();
+    scrapePageContent();
+
+    // Event listener for citation generation
+    const generateCitationButton = document.getElementById("generateCitation");
+    if (generateCitationButton) {
+        generateCitationButton.addEventListener("click", generateCitation);
+    } else {
+        console.error("Generate Citation button not found!");
+    }
 });
+
 
 // Function to display saved notes
 function displaySavedNotes() {
@@ -87,20 +108,45 @@ function deleteNote(index) {
     });
 }
 
-// Function to scrape the page content and pre-fill the note input
+// Function to scrape the text content of the current page
 function scrapePageContent() {
     chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
         if (response && response.contentList) {
-            const contentString = response.contentList.join('\n');
-            document.getElementById("note").value = contentString;
+            console.log('Scraped Content:', response.contentList);
+            storeScrapedContent(response.contentList);
         } else {
-            document.getElementById("note").value = "Could not scrape content.";
+            console.error('Scraping failed or no content found.');
         }
     });
 }
 
-// Initialize the popup
+// Function to generate citation
+function generateCitation() {
+    chrome.runtime.sendMessage({ action: 'generateCitation' }, (response) => {
+        if (chrome.runtime.lastError) {
+            console.error("Error generating citation:", chrome.runtime.lastError.message);
+            document.getElementById("citationResult").textContent = "Could not generate citation.";
+        } else if (response && response.citation) {
+            document.getElementById("citationResult").textContent = response.citation;
+        } else {
+            document.getElementById("citationResult").textContent = "Could not generate citation.";
+        }
+    });
+}
+
+// Initialize popup
 document.addEventListener('DOMContentLoaded', () => {
-    displaySavedNotes(); // Display saved notes
-    scrapePageContent(); // Pre-fill the note input with scraped content
+    displaySavedNotes();
+    scrapePageContent();
+
+    // Event listener for citation generation
+    document.getElementById("generateCitation").addEventListener("click", generateCitation);
 });
+
+// Function to store the scraped content
+function storeScrapedContent(contentArray) {
+    // Store in local storage (or send it to background.js for further handling)
+    chrome.storage.local.set({ scrapedContent: contentArray }, () => {
+        console.log('Scraped content saved.');
+    });
+}
