@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
 // Define your OpenAI API key
-const apiKey = 'sk-KKaahTFwrirLnFBj53poQkoswy8c3nfJgontEpvKwoT3BlbkFJjyKHUqKZi87k3XRtbkXQKKaNAJ9z6xVmftdAbYIBkA';
+const apiKey = "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";
 async function summarizePageContent(pageContent, sendResponse) {
 
     try {
@@ -36,8 +36,12 @@ async function summarizePageContent(pageContent, sendResponse) {
             })
         });
 
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+
         const data = await response.json();
-        if (data?.choices?.length) {
+        if (data?.choices?.length && data.choices[0]?.message?.content) {
             const summary = data.choices[0].message.content;
             sendResponse({ summary });
         } else {
