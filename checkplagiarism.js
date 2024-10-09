@@ -1,9 +1,9 @@
 apiKey = 'replace'
 searchId = 'replace';
 
-chrome.storage.local.get(['apiKey', 'searchEngineId'], (result) => {
-    apiKey = result.apiKey;
-    searchId = result.searchEngineId;
+chrome.storage.local.get(['apiKeyPlagiarism', 'searchEngineIdPlagiarism'], (result) => {
+    apiKey = result.apiKeyPlagiarism;
+    searchId = result.searchEngineIdPlagiarism;
 });
 
 //PROCESS:
