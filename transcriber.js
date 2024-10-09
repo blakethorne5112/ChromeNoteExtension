@@ -1,5 +1,4 @@
 import { YoutubeTranscript } from "./node_modules/youtube-transcript/dist/youtube-transcript.esm.js";
-
 const btn = document.getElementById("transcribe-youtube-video");
 
 
@@ -21,21 +20,13 @@ const btn = document.getElementById("transcribe-youtube-video");
 }); */
 
 
-
-
 if(btn) {
     try {
-        
         btn.addEventListener("click", async () => {
-
             try {
-
                 let lines = '';
-
                 console.log(lines);
-
                 chrome.tabs.query({currentWindow: true, active: true}, async function(tabs){
-        
                     var url = tabs[0].url;
         
                     //Await the treanscript fetching to resolve the promise
@@ -43,35 +34,22 @@ if(btn) {
                 
                     // Iterate over each line of the transcript
                     transcriptArr.forEach((transcriptLine) => {
-                        
-                        
                         lines += transcriptLine.text;
-                        
-                        lines += "\n\n";
-                        
-                        
-                        
+                        lines += "\n\n";           
                     });
                     
                     const p = document.getElementById("output");
                     p.innerHTML = lines;
-                    console.log(lines);
-
-                
+                    console.log(lines);      
                 })
 
             } catch (error) {
-
                 console.error("Error fetching transcript");
-
             }
-
         })
 
     } catch (error) {
-
         console.error("Error fetching transcript:", error);
-
     }
 }
 
