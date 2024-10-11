@@ -1,10 +1,10 @@
 let editingIndex = -1; // This will track if the user is editing an existing note
 
 // Function to save or update a note
-document.getElementById("saveNote").addEventListener("click", function() {
+document.getElementById("saveNote").addEventListener("click", function () {
     const note = document.getElementById("note").value;
 
-    chrome.storage.local.get({userNotes: []}, function(result) {
+    chrome.storage.local.get({ userNotes: [] }, function (result) {
         const notes = result.userNotes;
 
         if (editingIndex >= 0) {
@@ -17,7 +17,7 @@ document.getElementById("saveNote").addEventListener("click", function() {
         }
 
         // Save the updated notes array
-        chrome.storage.local.set({userNotes: notes}, function() {
+        chrome.storage.local.set({ userNotes: notes }, function () {
             console.log("Note saved!");
             displaySavedNotes();
         });
@@ -29,7 +29,7 @@ document.getElementById("saveNote").addEventListener("click", function() {
 
 // Function to display saved notes
 function displaySavedNotes() {
-    chrome.storage.local.get({userNotes: []}, function(result) {
+    chrome.storage.local.get({ userNotes: [] }, function (result) {
         const notesList = document.getElementById("notesList");
         notesList.innerHTML = '';
 
@@ -44,7 +44,7 @@ function displaySavedNotes() {
             const editButton = document.createElement("button");
             editButton.className = "icon-button edit";
             editButton.innerHTML = '<i class="fas fa-edit"></i>';
-            editButton.addEventListener("click", function(event) {
+            editButton.addEventListener("click", function (event) {
                 event.stopPropagation(); // Prevent triggering other actions
                 editNote(index);
             });
@@ -52,7 +52,7 @@ function displaySavedNotes() {
             const deleteButton = document.createElement("button");
             deleteButton.className = "icon-button delete";
             deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            deleteButton.addEventListener("click", function(event) {
+            deleteButton.addEventListener("click", function (event) {
                 event.stopPropagation(); // Prevent triggering other actions
                 deleteNote(index);
             });
@@ -67,7 +67,7 @@ function displaySavedNotes() {
 
 // Function to edit a note
 function editNote(index) {
-    chrome.storage.local.get({userNotes: []}, function(result) {
+    chrome.storage.local.get({ userNotes: [] }, function (result) {
         const notes = result.userNotes;
         document.getElementById("note").value = notes[index];
         editingIndex = index; // Set the index for the note being edited
@@ -76,11 +76,11 @@ function editNote(index) {
 
 // Function to delete a note
 function deleteNote(index) {
-    chrome.storage.local.get({userNotes: []}, function(result) {
+    chrome.storage.local.get({ userNotes: [] }, function (result) {
         const notes = result.userNotes;
         notes.splice(index, 1);
 
-        chrome.storage.local.set({userNotes: notes}, function() {
+        chrome.storage.local.set({ userNotes: notes }, function () {
             console.log("Note deleted!");
             displaySavedNotes();
         });
@@ -116,54 +116,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const voiceForm = document.querySelector("#voiceForm");
     const voiceInput = voiceForm.querySelector("#voice-text");
-    
+
     const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if(speechRecognition) {
+
+    if (speechRecognition) {
         console.log("Your Browser supports speech Recognition");
-    
+
         voiceForm.insertAdjacentHTML("beforeend", '<button type="button"><i class="fas fa-microphone"></i></button>');
         voiceForm.insertAdjacentHTML("beforeend", '<button id="reset-button" type="reset">Reset</button>');
-        
+
         const micBtn = voiceForm.querySelector("button");
         const micIcon = micBtn.querySelector("i");
-    
+
         const recognition = new speechRecognition();
         recognition.continuous = true;
-    
+
         micBtn.addEventListener("click", micBtnClick);
         function micBtnClick() {
-            if(micIcon.classList.contains("fa-microphone")) {
+            if (micIcon.classList.contains("fa-microphone")) {
                 // Start Speech Recognition
-                
+
                 recognition.start();
             }
-    
+
             else {
                 // Stop speech recongition
                 recognition.stop();
-    
+
                 console.log(recognition);
-    
+
             }
         }
-        
-        recognition.addEventListener("start", startSpeechRecognition); 
+
+        recognition.addEventListener("start", startSpeechRecognition);
         function startSpeechRecognition() {
             micIcon.classList.remove("fa-microphone");
             micIcon.classList.add("fa-microphone-slash");
             voiceInput.focus();
             console.log("Speech Recognition Active")
         }
-    
-        recognition.addEventListener("end", endSpeechRecognition); 
+
+        recognition.addEventListener("end", endSpeechRecognition);
         function endSpeechRecognition() {
             micIcon.classList.remove("fa-microphone-slash");
             micIcon.classList.add("fa-microphone")
             voiceInput.focus();
             console.log("Speech Recognition Inactive")
         }
-    
+
         recognition.addEventListener("result", resultOfSpeechRecognition);
         function resultOfSpeechRecognition(event) {
             console.log(event);
@@ -171,15 +171,30 @@ document.addEventListener("DOMContentLoaded", function () {
             const transcript = event.results[currentResultIndex][0].transcript;
             voiceInput.value += transcript;
         }
-    
+
         recognition.addEventListener("error", (event) => {
             console.log("Speech recognition error: ", event.error);
         });
-    }   
-    
+    }
+
     else {
         console.log("Your Browser does not support speech Recognition");
     }
 
 })
+
+document.getElementById('copy-transcription').addEventListener('click', function () {
+    // Get the output textarea element
+    const outputTextarea = document.getElementById('output');
+
+    // Select the text inside the textarea
+    outputTextarea.select();
+    outputTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+    // Copy the selected text to the clipboard
+    document.execCommand('copy');
+
+    // Optional: Alert the user that text was copied
+    alert('Transcription copied to clipboard!');
+});
 

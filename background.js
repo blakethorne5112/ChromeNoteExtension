@@ -7,15 +7,28 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case 'scrapePage':
+            console.log(message.data);
             scrapePageContent(sendResponse);
             return true; // Indicates async response
-
-        // Place for other actions
 
         default:
             console.warn(`Unhandled action: ${message.action}`);
     }
 });
+
+
+// Listener for YouTube videos found
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'youtubeViddeosFound') {
+        console.log('YouTube videos found:', message.data);
+        // Optionally send a response back
+        sendResponse({ success: true });
+    }
+
+    console.log("YOUR MUM");
+});
+
+
 //function to scrape page content
 function scrapePageContent(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -29,4 +42,4 @@ function scrapePageContent(callback) {
     });
 }
 
-  
+
