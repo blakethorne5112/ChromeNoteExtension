@@ -107,15 +107,6 @@ function deleteNote(index) {
         });
     });
 }
-// Function to scrape the text content of the current page
-function scrapePageContent() {
-    chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
-        if (response && response.contentList) {
-            console.log('Scraped Content:', response.contentList);
-            storeScrapedContent(response.contentList);
-        } else {
-            console.error('Scraping failed or no content found.');
-            
 // Function to scrape the text content of the current page from specific elements
 function scrapePageContent() {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -156,9 +147,17 @@ function scrapePageContent() {
 
         // Store or send the scraped content to be used by other features
         storeScrapedContent(scrapedContent);
+      } else {
+        console.error('Scraping failed or no content found.');
       }
     });
   });
+}
+
+// Function to store scraped content
+function storeScrapedContent(contentList) {
+  // Add your logic to store or process the content here
+  console.log("Stored content:", contentList);
 }
 
 // Function to generate citation
