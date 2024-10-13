@@ -108,16 +108,49 @@ function deleteNote(index) {
     });
 }
 
-// Function to scrape the text content of the current page
+// Function to scrape the text content of the current page from specific elements
 function scrapePageContent() {
-    chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
-        if (response && response.contentList) {
-            console.log('Scraped Content:', response.contentList);
-            storeScrapedContent(response.contentList);
-        } else {
-            console.error('Scraping failed or no content found.');
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.scripting.executeScript({
+      target: { tabId: tabs[0].id },
+      function: () => {
+        // Helper function to filter out unwanted elements
+        function isExcluded(element) {
+          const excludedClassesOrIds = ['toolbar', 'header']; // Add more as needed
+          const hasExcludedClass = excludedClassesOrIds.some(classOrId =>
+            element.classList.contains(classOrId) || element.id === classOrId
+          );
+          return hasExcludedClass;
         }
+
+        // Function to extract text only from desired elements like <p> and <a>
+        function extractTextFromElements() {
+          let extractedText = [];
+
+          // Select the desired elements and exclude unwanted ones
+          document.querySelectorAll('p, a').forEach(element => {
+            if (!isExcluded(element)) {
+              // Add the innerText of the element if it's not excluded
+              extractedText.push(element.innerText.trim());
+            }
+          });
+
+          return extractedText.filter(Boolean); // Remove empty strings
+        }
+
+        return extractTextFromElements();
+      }
+    }, (results) => {
+      if (results && results[0].result) {
+        // Store the scraped content as an array of strings (words)
+        let scrapedContent = results[0].result;
+        console.log("Scraped Content: ", scrapedContent);
+
+        // Store or send the scraped content to be used by other features
+        storeScrapedContent(scrapedContent);
+      }
     });
+  });
 }
 
 // Function to generate citation
@@ -162,8 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to store the scraped content
 function storeScrapedContent(contentArray) {
-    // Store in local storage (or send it to background.js for further handling)
-    chrome.storage.local.set({ scrapedContent: contentArray }, () => {
-        console.log('Scraped content saved.');
-    });
+  // Store in local storage (or send it to background.js for further handling)
+  chrome.storage.local.set({ scrapedContent: contentArray }, () => {
+    console.log('Scraped content saved.');
+  });
 }
+
+// Automatically run the scrapePageContent function when the content script is injected
+scrapePageContent();
