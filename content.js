@@ -1,3 +1,5 @@
+console.log('Content script loaded');
+
 function detectYouTubeVideos() {
     const videos = Array.from(document.querySelectorAll('iframe[src*="youtube.com"]'));
     if (videos.length > 0) {
@@ -12,8 +14,5 @@ function detectYouTubeVideos() {
     }
 }
 
-// Call this function when your content script is loaded or when you need to check for videos
+// Call this function when your content script is loaded
 detectYouTubeVideos();
-
-
-console.log('Content script loaded');

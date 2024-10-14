@@ -198,3 +198,5 @@ document.getElementById('copy-transcription').addEventListener('click', function
     alert('Transcription copied to clipboard!');
 });
 
+
+
