@@ -174,7 +174,40 @@ function generateCitation() {
     });
 }
 
-// Initialize popup
+function generateCitation() {
+    const style = document.getElementById('citationStyle').value;
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if (chrome.runtime.lastError) {
+            console.error("Error querying tabs:", chrome.runtime.lastError);
+            document.getElementById("citationResult").textContent = "Error: Could not access current tab.";
+            return;
+        }
+        
+        if (tabs.length === 0) {
+            console.error("No active tab found");
+            document.getElementById("citationResult").textContent = "Error: No active tab found.";
+            return;
+        }
+        
+        chrome.tabs.sendMessage(tabs[0].id, {action: "generateCitation", style: style}, function(response) {
+            if (chrome.runtime.lastError) {
+                console.error("Error sending message:", chrome.runtime.lastError);
+                document.getElementById("citationResult").textContent = "Error: Could not communicate with page.";
+                return;
+            }
+            
+            if (response && response.citation) {
+                console.log("Received citation:", response.citation);
+                document.getElementById("citationResult").textContent = response.citation;
+            } else {
+                console.error("No citation in response:", response);
+                document.getElementById("citationResult").textContent = "Could not generate citation.";
+            }
+        });
+    });
+}
+
+// initialize popup
 document.addEventListener('DOMContentLoaded', () => {
     displaySavedNotes();
     scrapePageContent();

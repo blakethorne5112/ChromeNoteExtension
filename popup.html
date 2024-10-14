@@ -17,20 +17,23 @@
       <button id="checkPlagiarism">Check Note for Plagiarism</button>
     </div>
 
-    <div id="citation-section">
-      <div id="citationResult" class="citationResult"></div>
-    </div>
-
-    <div id="plagiarism-section">
-      <div id="plagiarismResult" class="plagiarismResult"></div>
-    </div>
-
     <div id="savedNotes">
       <h3>Saved Notes:</h3>
       <div id="notesList"></div>
     </div>
   </div>
 
+  <div id="citationSection">
+    <h3>Citation Generator</h3>
+    <select id="citationStyle">
+      <option value="APA7">APA 7th Edition</option>
+      <option value="Harvard">Harvard</option>
+      <option value="MLA">MLA</option>
+      <option value="Chicago">Chicago</option>
+    </select>
+    <button id="generateCitation">Generate Citation</button>
+    <div id="citationResult"></div>
+  </div>
   <script src="popup.js"></script>
   <script src="checkplagiarism.js"></script>
 </body>

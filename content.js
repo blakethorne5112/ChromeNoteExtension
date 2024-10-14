@@ -39,13 +39,41 @@ function findAuthor() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Message received in content script:", request);
     if (request.action === "generateCitation") {
-        const title = document.title;
-        const url = window.location.href;
-        const author = findAuthor();
-        const date = new Date().toISOString().split('T')[0];
+        console.log("Received style:", request.style);  // Add this line
+        const citation = generateCitation(request.style);
+        console.log("Generated citation:", citation);
+        sendResponse({citation: citation});
+    }
+    return true;
+});
 
-        const citation = `${author}. (${date}). ${title}. Retrieved from ${url}`;
-        
+function generateCitation(style) {
+    const title = document.title;
+    const url = window.location.href;
+    const author = findAuthor();
+    const date = findPublicationDate();
+    const domain = window.location.hostname;
+
+    console.log("Generating citation with style:", style);  // Add this line
+
+    switch (style) {
+        case 'APA7':
+            return `APA7: ${author}. (${date}). ${title}. ${domain}. ${url}`;
+        case 'Harvard':
+            return `Harvard: ${author}, ${date}. ${title}. [online] Available at: <${url}> [Accessed ${new Date().toDateString()}].`;
+        case 'MLA':
+            return `MLA: ${author}. "${title}." ${domain}, ${date}, ${url}. Accessed ${new Date().toDateString()}.`;
+        case 'Chicago':
+            return `Chicago: ${author}. "${title}." ${domain}. Last modified ${date}. ${url}.`;
+        default:
+            return `Citation style not supported: ${style}`;
+    }
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("Message received in content script:", request);
+    if (request.action === "generateCitation") {
+        const citation = generateCitation(request.style);
         console.log("Generated citation:", citation);
         sendResponse({citation: citation});
     }
