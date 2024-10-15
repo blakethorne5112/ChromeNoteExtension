@@ -23,10 +23,9 @@ chrome.runtime.onInstalled.addListener(() => {
 
     // Store the API key and Search Engine ID in chrome storage
     chrome.storage.local.set({
-
         // USER NEEDS TO ENTER THEIR OWN API KEY AND SEARCH ENGINE ID
-        apiKey: 'insert-api-key-here',
-        searchEngineId: 'insert-search-engine-id-here'
+        apiKey: 'key',
+        searchEngineId: 'id'
     }, () => {
         console.log('API Key and Search Engine ID have been stored.');
     });
@@ -49,14 +48,65 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return true;
 
         case 'checkPlagiarism':
-            console.log("Checking plagiarism...");
-            checkPlagiarism(sendResponse);
-            return true;
+            {
+                let apiKey = 'key';
+                let searchId = 'id';
+                const query = 'Death Note (stylized in all caps) is a Japanese manga series written by Tsugumi Ohba and illustrated by Takeshi Obata. It was serialized in Shueishas shōnen manga magazine Weekly Shōnen Jump from December 2003 to May 2006'
+        
+                try {
+                    (async () => {
+                        console.log(`API Key: ${apiKey}, Search Engine ID: ${searchId}`);
+                        const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchId}&q=${encodeURIComponent(query)}`;
+                        const response = await fetch(url);
+                        console.log('Response:', response);
+                        if (!response.ok) {
+                            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+                        }
+        
+                        const plagiarismResults = await response.json();
 
+                        console.log('plagiarismResults:', plagiarismResults);
+                        // Check if items exist in the response
+                        if (plagiarismResults.items && plagiarismResults.items.length > 0) {
+                            // Send the results back as a response
+                            let plagiarisedText = "";
+                            plagiarismResults.items.forEach(item => {
+                                if(compareText(query, item.snippet) > 60){
+                                    //If the sentence is plagiarised, return the link to the website it was found at and the snippet
+                                    plagiarisedText += `Plagiarism found at: ${item.link} with snippet: ${item.snippet}`;
+                                    console.log(plagiarisedText);
+                                }
+                            });
+                            sendResponse({ plagiarism: plagiarisedText });
+                        } else {
+                            // No results found
+                            sendResponse({ error: 'No results found for the given query' });
+                        }
+                    })();
+                } catch (error) {
+                    console.error('Error:', error);
+                    sendResponse({ error: 'Failed to check plagiarism' });
+                }
+                return true;
+            }
         default:
             console.warn(`Unhandled action: ${message.action}`);
     }
 });
+
+function compareText(text, snippet) {
+    // Split strings into words
+    const words1 = new Set(text.toLowerCase().split(/\W+/));
+    const words2 = new Set(snippet.toLowerCase().split(/\W+/));
+
+    // Find common words
+    const commonWords = [...words1].filter(word => words2.has(word));
+
+    // Calculate similarity based on the ratio of common words to total words
+    const totalWords = new Set([...words1, ...words2]).size;
+    const similarity = commonWords.length / totalWords;
+    return similarity * 100;
+}
 
 // Function to generate citation
 function generateCitation(callback) {

@@ -15,22 +15,21 @@ chrome.storage.local.get(['apiKeyPlagiarism', 'searchEngineIdPlagiarism'], (resu
 //5. Return the flagged sentences
 
 // Listens for messages from background.js
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "checkPlagiarism") {
-        var plagiarisedText = "This is a test";
-        //plagiarisedText = checkPlagiarism();
-        sendResponse({ plagiarism: plagiarisedText });
-    }
-    return true;
-});
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//     if (message.action === "checkPlagiarism") {
+//         var plagiarisedText = checkPlagiarism();
+//         sendResponse({ plagiarism: plagiarisedText });
+//     }
+//     return true;
+// });
 
 function checkPlagiarism() {
     console.log("Checking plagiarism...");
     const data = getHTML();
     const text = splitText(data);
     if(text != 0){
-        // Create map of paragraphs to their respective links and snippets
-        const plagiarisedText = new Map();
+        // Create string of paragraphs to their respective links and snippets
+        let plagiarisedText = "";
         text.forEach(paragraph => {
             var sim = checkSimilarity(paragraph)
             if(sim != 0){
@@ -41,8 +40,11 @@ function checkPlagiarism() {
                 const similarityText = sim.split(',');
                 const link = similarityText[0];
                 const snippet = similarityText[1];
-                plagiarisedText.set(link, snippet);
-            };
+                plagiarisedText += `Plagiarism found at: ${link} with snippet: ${snippet}`;
+            }
+            else{
+                plagiarisedText += "Something went wrong! Please try again later.";
+            }
         });
         return plagiarisedText;    
     }
@@ -50,6 +52,9 @@ function checkPlagiarism() {
 
 function checkSimilarity(text) {
     const data = searchGoogle(text);
+    if(data == 0){
+        return 0;
+    }
     // Google returns a JSON of search results that are stored as 'items'
     const items = data.items;
     // These items have fields such as 'snippet' which contain a brief snippet from the webpage 
@@ -63,11 +68,23 @@ function checkSimilarity(text) {
     return 0;
 }
 
-function searchGoogle(query) {
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchId}:omuauf_lfve&q=${query}`;
-    const response =  fetch(url);
-    const data =  response.json();
-    return data;
+async function searchGoogle(query) {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchId}&q=${query}`;
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } 
+    catch (error) {
+        console.log('An error occurred:', error.message);
+        const data = 0;
+        return data;
+    }
 }
 
 //write a function that compares the text with the items and returns the percentage of similarity

@@ -182,16 +182,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for citation generation
     document.getElementById("generateCitation").addEventListener("click", generateCitation);
 
-
     const plagiarismButton = document.getElementById("checkPlagiarism");
     if (plagiarismButton) {
         plagiarismButton.addEventListener("click", function() {
+            document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
             chrome.runtime.sendMessage({ action: 'checkPlagiarism' }, (response) => {
                 if (chrome.runtime.lastError) {
-                    console.error("Error generating plagerism result:", chrome.runtime.lastError.message);
+                    console.error("Error generating plagiarism result:", chrome.runtime.lastError.message);
                     document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
                 } else if (response && response.plagiarism) {
-                    document.getElementById("plagiarismResult").textContent = response.plagiarism;
+                    console.log('Google actually had results');
+                    let plagiarisedText = "";
+                    plagiarisedText = response.plagiarism;
+                    if(plagiarisedText == ""){
+                        plagiarisedText = "No plagiarism found.";
+                    }
+                    document.getElementById("plagiarismResult").textContent = plagiarisedText;
                 } else {
                     document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
                 }
