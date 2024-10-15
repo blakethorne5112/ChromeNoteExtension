@@ -50,7 +50,61 @@ function detectYouTubeVideos() {
 
         else {
 
-            transcriptionOnNonYoutubeSite(url);
+
+            btn.addEventListener("click", async () => {
+
+                chrome.scripting.executeScript({
+                    target: { tabId: tabs[0].id },
+                    function: async () => {
+                        // This runs in the context of the active tab (webpage)
+            
+                        const youtubeVideo = document.querySelector('iframe');
+                        
+                        if(youtubeVideo) {
+                            console.log("Element inside the page:", youtubeVideo);
+            
+                            let youtubeLink = youtubeVideo.getAttribute('src');
+            
+                            // If src is not available, check nitro-og-src
+                            if (!youtubeLink) {
+                                youtubeLink = youtubeVideo.getAttribute('nitro-og-src');
+                                
+                            }
+            
+                            // If nitro-og-src is also not available, check nitro-lazy-src
+                            if (!youtubeLink) {
+                                youtubeLink = youtubeVideo.getAttribute('nitro-lazy-src');
+                            }
+            
+                            console.log("YouTube Link", youtubeLink);
+
+                            const transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink); 
+
+                            // Iterate over each line of the transcript
+                            transcriptArr.forEach((transcriptLine) => {
+                                console.log(transcriptLine.text);                        
+                                const sanitizedLine = sanitiseText(transcriptLine.text); // Sanitize before adding to lines
+                                lines += sanitizedLine + "\n\n"; // Add sanitized line to the output                       
+                                
+                            });
+
+                            const p = document.getElementById("output");
+                            p.innerHTML = lines;
+
+
+                        }
+            
+                        /* else {
+                            console.log("No Youtube Video Detected");
+                            //Add this message to the trascription textarea
+                        }   */              
+                        
+                    }
+            
+                });
+
+
+            })
 
 
        
@@ -60,52 +114,9 @@ function detectYouTubeVideos() {
     
     console.log("Linofersiojoijfosfjiok", youtubeLink);
 
-
 }
 
 
-
-
-function transcriptionOnNonYoutubeSite(url) {
-    
-    chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        function: () => {
-            // This runs in the context of the active tab (webpage)
-
-            const youtubeVideo = document.querySelector('iframe');
-            
-            if(youtubeVideo) {
-                console.log("Element inside the page:", youtubeVideo);
-
-                let youtubeLink = youtubeVideo.getAttribute('src');
-
-                // If src is not available, check nitro-og-src
-                if (!youtubeLink) {
-                    youtubeLink = youtubeVideo.getAttribute('nitro-og-src');
-                    console.log("ASS");
-                }
-
-                // If nitro-og-src is also not available, check nitro-lazy-src
-                if (!youtubeLink) {
-                    youtubeLink = youtubeVideo.getAttribute('nitro-lazy-src');
-                }
-
-                console.log("YouTube Link", youtubeLink);
-
-                
-            }
-
-            /* else {
-                console.log("No Youtube Video Detected");
-                //Add this message to the trascription textarea
-            }   */              
-            
-        }
-
-    });
-
-}
 
 function transcriptionOnYouTubeSite(url) {
 
