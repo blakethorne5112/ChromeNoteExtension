@@ -99,6 +99,7 @@ function scrapePageContent() {
 }
 
 
+
 // Initialize the popup
 document.addEventListener('DOMContentLoaded', () => {
     displaySavedNotes(); // function needs to be defined for displaying saved notes
