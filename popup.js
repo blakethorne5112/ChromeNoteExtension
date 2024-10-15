@@ -141,27 +141,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for citation generation
     document.getElementById("generateCitation").addEventListener("click", generateCitation);
+
+    //AI detection function
+    document.getElementById('detectBtn').addEventListener('click', async () => {
+        chrome.storage.local.get('scrapedContent', (result) => {
+            if (chrome.runtime.lastError) {
+                console.error("Error retrieving scraped content:", chrome.runtime.lastError);
+            } else if (result.scrapedContent) {
+                const textToAnalyze = result.scrapedContent;
+                console.log("Scraped content retrieved:", textToAnalyze);
+                // Continue using textToAnalyze// Call the background script to make the API request
+        chrome.runtime.sendMessage({ text: textToAnalyze, action: "aiDetection" }, function (response) {
+          if (response && response.result) {
+            const score = response.result.score; // Your score
+
+            // Calculate percentage
+            const percentage = score * 100;
+            document.getElementById('aiResult').textContent = 
+              `Likelihood of AI Text: ${percentage.toFixed(2)}%`;
+          } else {
+            document.getElementById('aiResult').textContent = 
+              'Error detecting AI content';
+          }
+        });
+            } else {
+                console.log("No scraped content found.");
+            }
+         });
+        
+    });
+
 });
 
-//AI detection function
-document.getElementById('detectBtn').addEventListener('click', async () => {
-    const textToAnalyze = document.getElementById('textToAnalyze').value;
-    
-    // Call the background script to make the API request
-    chrome.runtime.sendMessage({ text: textToAnalyze, action: "aiDetection" }, function (response) {
-      if (response && response.result) {
-        const score = response.result.score; // Your score
 
-        // Calculate percentage
-        const percentage = score * 100;
-        document.getElementById('aiResult').textContent = 
-          `AI Score: ${percentage.toFixed(2)}%`;
-      } else {
-        document.getElementById('aiResult').textContent = 
-          'Error detecting AI content';
-      }
-    });
-  });
   
 // Function to store the scraped content
 function storeScrapedContent(contentArray) {

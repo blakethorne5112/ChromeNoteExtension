@@ -50,6 +50,15 @@ body {
   button#generateCitation:hover {
     background-color: #45a049;
   }
+
+  button#detectBtn {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#detectBtn:hover {
+    background-color: #45a049;
+  }
   
   /* Saved notes section */
   #savedNotes {

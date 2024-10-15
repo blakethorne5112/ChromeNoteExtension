@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                             },
                             body: JSON.stringify({
                                 key: apiKey,
-                                text: message.text
+                                text: message.text.toString()
                             })
                         });
 
