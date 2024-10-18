@@ -17,17 +17,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
-// Listener for YouTube videos found
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'youtubeVideosFound') {
-        console.log('YouTube videos found:', message.data);
-        // Optionally send a response back
-        sendResponse({ success: true });
-    }
-
-});
-
-
 //function to scrape page content
 function scrapePageContent(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
