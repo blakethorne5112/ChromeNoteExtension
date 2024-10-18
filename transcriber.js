@@ -28,9 +28,6 @@ function isYouTubeLink(link) {
     return youtubeRegex.test(link);
 }
 
-function test() {
-    console.log("LSJLSJLf")
-}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.youtubeLink) {
