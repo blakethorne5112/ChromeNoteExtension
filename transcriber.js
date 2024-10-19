@@ -54,7 +54,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             const transcriberTextArea = document.getElementById("output");
 
-            transcriberTextArea.innerHTML = "No Youtube Videos detected";
+            transcriberTextArea.innerText = "No Embedded Youtube Videos detected";
         
             /* document.body.appendChild(newHeading);
             document.body.insertBefore(newHeading, currentDiv); */

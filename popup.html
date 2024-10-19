@@ -13,18 +13,17 @@
   <body>
 
       <textarea id="note" placeholder="Enter your notes here..."></textarea>
+      
       <button id="saveNote">Save Note</button>
+
+      <button id = "microphone-button" type="button"><i class="fas fa-microphone"></i></button>
+            
       <br/><br/>
-      <form method="get" id="voiceForm" target="_blank">
-        <textarea type="text" id = "voice-text" placeholder="Speak after pressing mic icon" autocomplete="off" autofocus></textarea> 
-      </form>
-      <br/><br/>
+
 
       <!-- <textarea type="text" id="trascribed-text" placeholder="Click the Transcribe icon for transcription to begin" ></textarea> -->
      
-
       <ul id="videoList"></ul>
-
       <textarea id = "output" placeholder="Press Transcribe button" readonly></textarea>
       <button id = "transcribe-youtube-video" type = "button">Transcribe Youtube Video <i class="fa fa-youtube-play"></i></button>
       <button id="copy-transcription" type="button"><i class="fa-solid fa-copy"></i></button>
