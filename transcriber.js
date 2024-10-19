@@ -36,25 +36,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         youtubeLink = message.youtubeLink;
         
         
+        if(isYouTubeLink(youtubeLink) === false) {
+            console.log("No Embedded Youtube Videos detected");
 
-        btn.addEventListener("click", async () => {
-            
-            transcribe(youtubeLink)
+            const newHeading = document.createElement("h2");
+
+            // and give it some content
+            const newContent = document.createTextNode("No Youtube Videos detected");
+
+            newHeading.id = "No-Youtube-Videos-Message";
+
+            // add the text node to the newly created div
+            newHeading.appendChild(newContent);
+
+            // add the newly created element and its content into the DOM
+            const currentDiv = document.getElementById("videoList");
+
+            const transcriberTextArea = document.getElementById("output");
+
+            transcriberTextArea.innerHTML = "No Youtube Videos detected";
         
-        });
+            /* document.body.appendChild(newHeading);
+            document.body.insertBefore(newHeading, currentDiv); */
+        } 
+
+        else {
+            btn.addEventListener("click", async () => {transcribe(youtubeLink)});
         
 
-        const newDiv = document.createElement("videoList");
+            const newButton = document.createElement("button");
 
-        // and give it some content
-        const newContent = document.createTextNode("List of Youtube transcripts");
+            // and give it some content
+            const newContent = document.createTextNode("Video 1");
 
-        // add the text node to the newly created div
-        newDiv.appendChild(newContent);
+            newButton.id = "selectableButton";
 
-        // add the newly created element and its content into the DOM
-        const currentDiv = document.getElementById("videoList");
-        document.body.insertBefore(newDiv, currentDiv);
+            // add the text node to the newly created div
+            newButton.appendChild(newContent);
+
+            // add the newly created element and its content into the DOM
+            const currentDiv = document.getElementById("videoList");
+        
+            document.body.appendChild(newButton);
+            document.body.insertBefore(newButton, currentDiv);
+        }
+
+
+        
 
     }
 
@@ -114,6 +142,10 @@ function detectYouTubeVideos() {
                     // This runs in the context of the active tab (webpage)
                     const youtubeVideo = document.querySelector('iframe');
 
+                    const allYoutubeVideos = document.querySelectorAll('iframe');
+
+                    console.log(allYoutubeVideos);
+
                     if(youtubeVideo) {
         
                         let youtubeLink = youtubeVideo.getAttribute('src');
@@ -128,6 +160,7 @@ function detectYouTubeVideos() {
                         if (!youtubeLink) {
                             youtubeLink = youtubeVideo.getAttribute('nitro-lazy-src');
                         }
+
                         console.log("YouTube Link", youtubeLink);
                         chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
 
