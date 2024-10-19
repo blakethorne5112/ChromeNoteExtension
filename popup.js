@@ -113,21 +113,14 @@ document.addEventListener('DOMContentLoaded', displaySavedNotes);
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    /* const voiceForm = document.querySelector("#voiceForm"); */
-
     const voiceInput = document.getElementById("note");
-
-    
 
     const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (speechRecognition) {
         console.log("Your Browser supports speech Recognition");
 
-        /* voiceForm.insertAdjacentHTML("beforeend", '<button id = "microphone-button" type="button"><i class="fas fa-microphone"></i></button>');
-        voiceForm.insertAdjacentHTML("beforeend", '<button id="reset-button" type="reset">Reset</button>'); */
-
-        /* const micBtn = document.querySelector("button"); */
+       
 
         const micBtn = document.getElementById("microphone-button");
         const micIcon = micBtn.querySelector("i");
