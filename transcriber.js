@@ -124,6 +124,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function transcribe(youtubeLink) {
     let lines = '';
     const fallbackLanguages = ['en-US']; // Only fallback to 'en-US'
+
+    console.log("Transcription on non youtube web page");
+
     let transcriptArr = null;
 
     try {
