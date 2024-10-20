@@ -1,4 +1,13 @@
-import { YoutubeTranscript } from "./node_modules/youtube-transcript/dist/youtube-transcript.esm.js";
+import { YoutubeTranscript, YoutubeTranscriptDisabledError, 
+    YoutubeTranscriptError, 
+    YoutubeTranscriptNotAvailableError, 
+    YoutubeTranscriptNotAvailableLanguageError, 
+    YoutubeTranscriptTooManyRequestError, 
+    YoutubeTranscriptVideoUnavailableError 
+
+} from "./node_modules/youtube-transcript/dist/youtube-transcript.esm.js";
+
+
 const btn = document.getElementById("transcribe-youtube-video");
 
 
@@ -90,7 +99,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 
-async function transcribe(youtubeLink) {
+/* async function transcribe(youtubeLink) {
     const transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink); 
 
     console.log(transcriptArr);
@@ -110,7 +119,58 @@ async function transcribe(youtubeLink) {
     p.innerHTML = lines;
     console.log(youtubeLink);
 
+} */
+
+async function transcribe(youtubeLink) {
+    let lines = '';
+    const fallbackLanguages = ['en-US']; // Only fallback to 'en-US'
+    let transcriptArr = null;
+
+    try {
+        // First attempt with 'en'
+        transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink, { lang: 'en' });
+
+        // If no transcript is available in 'en', try fallback languages
+        if (!transcriptArr || transcriptArr.length === 0) {
+            console.log("Transcript in 'en' not found. Trying fallback languages...");
+            
+            // Iterate through fallback languages
+            for (let lang of fallbackLanguages) {
+                try {
+                    transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink, { lang });
+                    if (transcriptArr && transcriptArr.length > 0) {
+                        console.log(`Transcript found in '${lang}'`);
+                        break; // Exit loop if a transcript is found
+                    }
+                } catch (error) {
+                    console.log(`Error fetching transcript in '${lang}':`, error);
+                    // Continue to the next language if an error occurs
+                }
+            }
+        }
+
+        // Process the transcript if found
+        if (transcriptArr && transcriptArr.length > 0) {
+            transcriptArr.forEach((transcriptLine) => {
+                console.log(transcriptLine.text);                        
+                const sanitizedLine = sanitiseText(transcriptLine.text); // Sanitize before adding to lines
+                lines += sanitizedLine + "\n\n"; // Add sanitized line to the output
+            });
+
+            const p = document.getElementById("output");
+            p.innerHTML = lines;
+            console.log("Final YouTube link:", youtubeLink);
+        } else {
+            console.error("No transcript available in any of the attempted languages.");
+            alert("No transcript is available for this video in the selected languages.");
+        }
+    } catch (error) {
+        console.error("Error fetching transcript:", error);
+        alert("An unexpected error occurred while fetching the transcript.");
+    }
 }
+    
+
 
 function detectYouTubeVideos() {
 
@@ -184,7 +244,7 @@ function detectYouTubeVideos() {
 
 
 
-function transcriptionOnYouTubeSite(url) {
+/* function transcriptionOnYouTubeSite(url) {
 
     try {
         let lines = '';
@@ -230,6 +290,59 @@ function transcriptionOnYouTubeSite(url) {
         }
     }
 
+} */
+
+async function transcriptionOnYouTubeSite() {
+    try {
+        let lines = '';
+
+        chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+            var url = tabs[0].url;
+
+            try {
+                // Try fetching the transcript in 'en'
+                let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en' });
+
+                // If no transcript is available in 'en', try 'en-US'
+                if (!transcriptArr || transcriptArr.length === 0) {
+                    throw new YoutubeTranscriptNotAvailableLanguageError('en', ['en-US'], url);
+                }
+
+                // Process the transcript
+                transcriptArr.forEach((transcriptLine) => {
+                    console.log(transcriptLine.text);
+                    const sanitizedLine = sanitiseText(transcriptLine.text);
+                    lines += sanitizedLine + "\n\n"; 
+                });
+
+            } catch (error) {
+                if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
+                    console.log("Attempting to fetch transcript with 'en-US'...");
+                    try {
+                        let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en-US' });
+
+                        transcriptArr.forEach((transcriptLine) => {
+                            console.log(transcriptLine.text);
+                            const sanitizedLine = sanitiseText(transcriptLine.text);
+                            lines += sanitizedLine + "\n\n";
+                        });
+                    } catch (error) {
+                        console.error("Error fetching transcript with 'en-US':", error);
+                        throw error;
+                    }
+                } else {
+                    throw error;
+                }
+            }
+
+            const p = document.getElementById("output");
+            p.innerHTML = lines;
+        });
+    } catch (error) {
+        // Handle errors here
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+    }
 }
 
 detectYouTubeVideos();
