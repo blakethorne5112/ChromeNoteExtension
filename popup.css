@@ -37,7 +37,6 @@ body {
   button#saveNote {
     background-color: #4CAF50;
     color: white;
-    width: 75%;
   }
   
   button#saveNote:hover {
@@ -141,19 +140,16 @@ body {
 
 
   #transcribe-youtube-video {
-    width: 65%;
     padding: 10px;
     border: none;
     background-color: red;
     color: white;
     border-radius: 5px;
-    font-size: 13px;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
 
 #selectableButton {
-  width: 20%;
     padding: 10px;
     border: none;
     background-color: rgb(255, 0, 0);
@@ -165,7 +161,6 @@ body {
 }
 
 #microphone-button {
-  width: 20%;
   padding: 10px;
   margin-left: 10px;
   border: none;
@@ -177,7 +172,6 @@ body {
 
 
 #copy-transcription {
-  width: 20%;
   padding: 10px;
   margin-left: 20px;
   border: none;
@@ -185,4 +179,11 @@ body {
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+}
+
+
+#save-transcript {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
 }

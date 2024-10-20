@@ -27,6 +27,32 @@ document.getElementById("saveNote").addEventListener("click", function () {
     document.getElementById("note").value = '';
 });
 
+document.getElementById("save-transcript").addEventListener("click", function () {
+    const note = document.getElementById("output").value;
+
+    chrome.storage.local.get({ userNotes: [] }, function (result) {
+        const notes = result.userNotes;
+
+        if (editingIndex >= 0) {
+            // If editing an existing note, update it
+            notes[editingIndex] = note;
+            editingIndex = -1; // Reset the editing index after saving
+        } else {
+            // Otherwise, add a new note
+            notes.push(note);
+        }
+
+        // Save the updated notes array
+        chrome.storage.local.set({ userNotes: notes }, function () {
+            console.log("Transcript saved!");
+            displaySavedNotes();
+        });
+    });
+
+    // Clear the note input after saving
+    document.getElementById("note").value = '';
+});
+
 // Function to display saved notes
 function displaySavedNotes() {
     chrome.storage.local.get({ userNotes: [] }, function (result) {
