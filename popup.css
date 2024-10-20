@@ -155,14 +155,13 @@ body {
     background-color: rgb(255, 0, 0);
     color: white;
     border-radius: 5px;
-    font-size: 12px;
+
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 #microphone-button {
   padding: 10px;
-  margin-left: 10px;
   border: none;
   border-radius: 5px;
   font-size: 14px;
@@ -173,7 +172,6 @@ body {
 
 #copy-transcription {
   padding: 10px;
-  margin-left: 20px;
   border: none;
   border-radius: 5px;
   font-size: 14px;
