@@ -185,20 +185,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const plagiarismButton = document.getElementById("checkPlagiarism");
     if (plagiarismButton) {
         plagiarismButton.addEventListener("click", function() {
+            const note = document.getElementById("note").value;
+
             document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
-            chrome.runtime.sendMessage({ action: 'checkPlagiarism' }, (response) => {
+            chrome.runtime.sendMessage({ 
+                action: 'checkPlagiarism',
+                note: note
+             }, (response) => {
                 if (chrome.runtime.lastError) {
                     console.error("Error generating plagiarism result:", chrome.runtime.lastError.message);
                     document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
                 } else if (response && response.plagiarism) {
-                    console.log('Google actually had results');
                     let plagiarisedText = "";
                     plagiarisedText = response.plagiarism;
                     if(plagiarisedText == ""){
                         plagiarisedText = "No plagiarism found.";
                     }
-                    document.getElementById("plagiarismResult").textContent = plagiarisedText;
-                } else {
+                    document.getElementById("plagiarismResult").innerHTML = plagiarisedText;
+                } else if (response.error && response.error == 'You must be writing or editing a note to check plagiarism!') {
+                    document.getElementById("plagiarismResult").textContent = response.error;
+                } 
+                else {
                     document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
                 }
             });
