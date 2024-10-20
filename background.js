@@ -1,3 +1,5 @@
+importScripts('keys.js');
+
 // Function to ensure content script is injected
 function ensureContentScriptInjected(tabId, callback) {
     chrome.scripting.executeScript({
@@ -21,14 +23,14 @@ function ensureCheckPlagiarismScriptInjected(tabId, callback) {
 chrome.runtime.onInstalled.addListener(() => {
     console.log('Note Taking Extension Installed');
 
-    // Store the API key and Search Engine ID in chrome storage
-    chrome.storage.local.set({
-
-        // USER NEEDS TO ENTER THEIR OWN API KEY AND SEARCH ENGINE ID
-        apiKey: 'insert-api-key-here',
-        searchEngineId: 'insert-search-engine-id-here'
-    }, () => {
-        console.log('API Key and Search Engine ID have been stored.');
+    // Fetch and log the apiKeyPlagiarism from local storage correctly
+    chrome.storage.local.get('apiKeyPlagiarism', (data) => {
+        // If the key exists in storage, it will log it, otherwise log a placeholder
+        if (data.apiKeyPlagiarism) {
+            console.log('Plagiarism API Key:', data.apiKeyPlagiarism);
+        } else {
+            console.log('Plagiarism API Key is not set yet.');
+        }
     });
 });
 
