@@ -298,7 +298,8 @@ function detectYouTubeVideos() {
 async function transcriptionOnYouTubeSite() {
     try {
         let lines = '';
-
+        console.log("Transcription on Youtube web page");
+        
         chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
             var url = tabs[0].url;
 
