@@ -39,8 +39,36 @@ function isYouTubeLink(link) {
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.youtubeLink) {
-        console.log("Received YouTube Link:", message.youtubeLink);
+    console.log(message.youtubeLinks);
+
+    if(message.youtubeLinks) {
+        console.log("Arrays");
+        console.log(message.youtubeLinks);
+
+        message.youtubeLinks.forEach((youtubeLink, index) => {
+
+            const selectedTranscription = document.createElement("button");
+            const buttonContent = document.createTextNode(`Transcribe Video ${index + 1}`);
+
+            selectedTranscription.id = `selectableButton${index}`;
+            selectedTranscription.appendChild(buttonContent);
+
+            // Insert the button into the DOM
+            const currentDiv = document.getElementById("videoList");
+            document.body.insertBefore(selectedTranscription, currentDiv);
+
+            selectedTranscription.addEventListener("click", async () => {
+                console.log(`Transcribing video ${index + 1}:`, youtubeLink);
+                await transcribe(youtubeLink)
+            });
+
+        });
+
+        
+    }
+
+    else if (message.youtubeLink) {
+        /* console.log("Received YouTube Link:", message.youtubeLink); */
         // You can now use youtubeLink here as needed
         youtubeLink = message.youtubeLink;
         
@@ -65,30 +93,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             transcriberTextArea.innerText = "No Embedded Youtube Videos detected";
         
-            /* document.body.appendChild(newHeading);
-            document.body.insertBefore(newHeading, currentDiv); */
+            ///document.body.appendChild(newHeading);
+            //document.body.insertBefore(newHeading, currentDiv);
         } 
 
-        else {
-            btn.addEventListener("click", async () => {transcribe(youtubeLink)});
-        
+        /*else {
+            
+            // Was for single transcriptions
+            /* btn.addEventListener("click", async () => {
+                transcribe(youtubeLink)
+            }); */
 
-            const newButton = document.createElement("button");
+            /* const selectedTranscription = document.createElement("button");
 
             // and give it some content
-            const newContent = document.createTextNode("Video 1");
+            const newContent = document.createTextNode("Video Transcription");
 
-            newButton.id = "selectableButton";
+            selectedTranscription.id = "selectableButton";
 
             // add the text node to the newly created div
-            newButton.appendChild(newContent);
+            selectedTranscription.appendChild(newContent);
 
             // add the newly created element and its content into the DOM
             const currentDiv = document.getElementById("videoList");
         
-            document.body.appendChild(newButton);
-            document.body.insertBefore(newButton, currentDiv);
-        }
+            document.body.appendChild(selectedTranscription);
+            document.body.insertBefore(selectedTranscription, currentDiv);
+
+            selectedTranscription.addEventListener("click", async () => {
+                transcribe(youtubeLink)
+            }); 
+        }*/
 
 
         
@@ -97,29 +132,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 });
 
-
-
-/* async function transcribe(youtubeLink) {
-    const transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink); 
-
-    console.log(transcriptArr);
-
-    let lines = '';
-
-    // Iterate over each line of the transcript
-    transcriptArr.forEach((transcriptLine) => {
-        console.log(transcriptLine.text);                        
-        const sanitizedLine = sanitiseText(transcriptLine.text); // Sanitize before adding to lines
-        lines += sanitizedLine + "\n\n"; // Add sanitized line to the output                       
-        
-    });
-
-
-    const p = document.getElementById("output");
-    p.innerHTML = lines;
-    console.log(youtubeLink);
-
-} */
 
 async function transcribe(youtubeLink) {
     let lines = '';
@@ -168,18 +180,35 @@ async function transcribe(youtubeLink) {
             alert("No transcript is available for this video in the selected languages.");
         }
     } catch (error) {
-        console.error("Error fetching transcript:", error);
-        alert("An unexpected error occurred while fetching the transcript.");
-    }
-}
-    
 
+        if (error instanceof YoutubeTranscriptTooManyRequestError) {
+            console.error("Error: Too many requests to YouTube. Please solve the CAPTCHA.");
+            alert("Error: Too many requests to YouTube. Please solve the CAPTCHA.");
+        } else if (error instanceof YoutubeTranscriptVideoUnavailableError) {
+            console.error("Error: The video is no longer available.");
+            alert("Error: The video is no longer available.");
+        } else if (error instanceof YoutubeTranscriptDisabledError) {
+            /* console.error("Error: Transcript is disabled on this video."); */
+            /* alert("Error: Transcript is disabled on this video."); */
+            const p = document.getElementById("output");
+            p.innerHTML = "No transcript available for this video";
+        } else if (error instanceof YoutubeTranscriptNotAvailableError) {
+            console.error("Error: No transcripts are available for this video.");
+            alert("Error: No transcripts are available for this video.");
+        } else if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
+            console.error("Error: No transcripts available in the selected language.");
+            alert("Error: No transcripts available in the selected language.");
+        } else {
+            console.error("Error fetching transcript:", error);
+            alert("An unexpected error occurred while fetching the transcript.");
+        }
+    }
+
+}
 
 function detectYouTubeVideos() {
 
     console.log('detectYoutubeVideos function called');
-
-    const videos = Array.from(document.querySelectorAll('iframe[src*="youtube.com"]'));
 
     let youtubeLink;
 
@@ -204,12 +233,64 @@ function detectYouTubeVideos() {
                 function: () => {
                     // This runs in the context of the active tab (webpage)
                     const youtubeVideo = document.querySelector('iframe');
-
+                    
                     const allYoutubeVideos = document.querySelectorAll('iframe');
+                    const youtubeLinks = []; // Array to store YouTube links
+                    let done = false;
+                    
+                    let i = 0;
+                    const totalVidsTraversed = allYoutubeVideos.length;
 
-                    console.log(allYoutubeVideos);
+                    console.log(totalVidsTraversed);
+                    
 
-                    if(youtubeVideo) {
+                    allYoutubeVideos.forEach((currentVid) => {
+                        console.log(currentVid);
+
+                        if(currentVid) {
+        
+                            let youtubeLink = currentVid.getAttribute('src');
+            
+                            // If src is not available, check nitro-og-src
+                            if (!youtubeLink) {
+                                youtubeLink = currentVid.getAttribute('nitro-og-src');
+                                
+                            }
+            
+                            // If nitro-og-src is also not available, check nitro-lazy-src
+                            if (!youtubeLink) {
+                                youtubeLink = currentVid.getAttribute('nitro-lazy-src');
+                            }
+
+                            youtubeLinks.push(youtubeLink);
+    
+                            
+                            /* chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
+                            chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks}); */
+
+                            
+                            /* chrome.runtime.sendMessage({ done: done}); */
+                            console.log("jsljsdl");
+                            console.log(i);
+
+                            if(i == totalVidsTraversed - 1) {
+                                console.log("if condition ");
+                                chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
+                                chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks});
+                            }
+
+
+
+                            i += 1;
+                        }
+            
+                        else {
+                            console.log("No Youtube Video Detected");
+                            //Add this message to the trascription textarea
+                        }
+                    })
+
+                    /* if(youtubeVideo) {
         
                         let youtubeLink = youtubeVideo.getAttribute('src');
         
@@ -232,7 +313,7 @@ function detectYouTubeVideos() {
                     else {
                         console.log("No Youtube Video Detected");
                         //Add this message to the trascription textarea
-                    }                
+                    } */                
                     
                 }
 
@@ -245,7 +326,83 @@ function detectYouTubeVideos() {
 
 }
 
+async function transcriptionOnYouTubeSite() {
+    try {
+        let lines = '';
+        console.log("Transcription on Youtube web page");
+        
+        chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+            var url = tabs[0].url;
 
+            try {
+                // Try fetching the transcript in 'en'
+                let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en' });
+
+                // If no transcript is available in 'en', try 'en-US'
+                if (!transcriptArr || transcriptArr.length === 0) {
+                    throw new YoutubeTranscriptNotAvailableLanguageError('en', ['en-US'], url);
+                }
+
+                // Process the transcript
+                transcriptArr.forEach((transcriptLine) => {
+                    console.log(transcriptLine.text);
+                    const sanitizedLine = sanitiseText(transcriptLine.text);
+                    lines += sanitizedLine + "\n\n"; 
+                });
+
+            } catch (error) {
+                if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
+                    console.log("Attempting to fetch transcript with 'en-US'...");
+                    try {
+                        let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en-US' });
+
+                        transcriptArr.forEach((transcriptLine) => {
+                            console.log(transcriptLine.text);
+                            const sanitizedLine = sanitiseText(transcriptLine.text);
+                            lines += sanitizedLine + "\n\n";
+                        });
+                    } catch (error) {
+                        console.error("Error fetching transcript with 'en-US':", error);
+                        throw error;
+                    }
+
+                
+                }
+
+                else if (error instanceof YoutubeTranscriptTooManyRequestError) {
+                    console.error("Error: Too many requests to YouTube. Please solve the CAPTCHA.");
+                    alert("Error: Too many requests to YouTube. Please solve the CAPTCHA.");
+                } else if (error instanceof YoutubeTranscriptVideoUnavailableError) {
+                    console.error("Error: The video is no longer available.");
+                    alert("Error: The video is no longer available.");
+                } else if (error instanceof YoutubeTranscriptDisabledError) {
+                    /* console.error("Error: Transcript is disabled on this video."); */
+                    /* alert("Error: Transcript is disabled on this video."); */
+                    const p = document.getElementById("output");
+                    p.innerHTML = "No transcript available for this video";
+                } else if (error instanceof YoutubeTranscriptNotAvailableError) {
+                    console.error("Error: No transcripts are available for this video.");
+                    alert("Error: No transcripts are available for this video.");
+                } else if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
+                    console.error("Error: No transcripts available in the selected language.");
+                    alert("Error: No transcripts available in the selected language.");
+                } else {
+                    console.error("Error fetching transcript:", error);
+                    alert("An unexpected error occurred while fetching the transcript.");
+                }
+                
+                
+            }
+
+            const p = document.getElementById("output");
+            p.innerHTML = lines;
+        });
+    } catch (error) {
+        // Handle errors here
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+    }
+}
 
 /* function transcriptionOnYouTubeSite(url) {
 
@@ -295,61 +452,29 @@ function detectYouTubeVideos() {
 
 } */
 
-async function transcriptionOnYouTubeSite() {
-    try {
-        let lines = '';
-        console.log("Transcription on Youtube web page");
+
+/* async function transcribe(youtubeLink) {
+    const transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink); 
+
+    console.log(transcriptArr);
+
+    let lines = '';
+
+    // Iterate over each line of the transcript
+    transcriptArr.forEach((transcriptLine) => {
+        console.log(transcriptLine.text);                        
+        const sanitizedLine = sanitiseText(transcriptLine.text); // Sanitize before adding to lines
+        lines += sanitizedLine + "\n\n"; // Add sanitized line to the output                       
         
-        chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
-            var url = tabs[0].url;
+    });
 
-            try {
-                // Try fetching the transcript in 'en'
-                let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en' });
 
-                // If no transcript is available in 'en', try 'en-US'
-                if (!transcriptArr || transcriptArr.length === 0) {
-                    throw new YoutubeTranscriptNotAvailableLanguageError('en', ['en-US'], url);
-                }
+    const p = document.getElementById("output");
+    p.innerHTML = lines;
+    console.log(youtubeLink);
 
-                // Process the transcript
-                transcriptArr.forEach((transcriptLine) => {
-                    console.log(transcriptLine.text);
-                    const sanitizedLine = sanitiseText(transcriptLine.text);
-                    lines += sanitizedLine + "\n\n"; 
-                });
+} */
 
-            } catch (error) {
-                if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
-                    console.log("Attempting to fetch transcript with 'en-US'...");
-                    try {
-                        let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en-US' });
-
-                        transcriptArr.forEach((transcriptLine) => {
-                            console.log(transcriptLine.text);
-                            const sanitizedLine = sanitiseText(transcriptLine.text);
-                            lines += sanitizedLine + "\n\n";
-                        });
-                    } catch (error) {
-                        console.error("Error fetching transcript with 'en-US':", error);
-                        throw error;
-                    }
-                } else {
-                    throw error;
-                }
-            }
-
-            const p = document.getElementById("output");
-            p.innerHTML = lines;
-        });
-    } catch (error) {
-        // Handle errors here
-        console.error("Error:", error);
-        alert("An error occurred: " + error.message);
-    }
-}
-
-detectYouTubeVideos();
 
 /* btn.addEventListener("click", async () => {
     try {
@@ -398,3 +523,4 @@ detectYouTubeVideos();
 }); */
 
 
+detectYouTubeVideos();
