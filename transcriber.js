@@ -39,30 +39,34 @@ function isYouTubeLink(link) {
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log(message.youtubeLinks);
+    
+    console.log(message.youtubeLinks.length);
 
-    if(message.youtubeLinks) {
+    if(message.youtubeLinks.length == 0) {
+        const p = document.getElementById("output");
+        p.innerHTML = "No Embedded Youtube Videos detected";
+
+    }
+
+    else if(message.youtubeLinks) {
         console.log("Arrays");
         console.log(message.youtubeLinks);
 
         message.youtubeLinks.forEach((youtubeLink, index) => {
 
             const selectedTranscription = document.createElement("button");
-            const buttonContent = document.createTextNode(`Transcribe Video ${index + 1} `);
+            const buttonContent = document.createTextNode(` Transcribe Video ${index + 1}`);
             
             const icon = document.createElement("icon");
             icon.className="fa fa-youtube-play"
-            
-
 
             selectedTranscription.id = `selectableButton${index}`;
             selectedTranscription.style.backgroundColor = 'red';
             selectedTranscription.style.color = 'white';
             
-            /* selectedTranscription.insertAdjacentHTML(<i class="fa fa-youtube-play"></i>); */
-
-            selectedTranscription.appendChild(buttonContent);
             selectedTranscription.appendChild(icon);
+            selectedTranscription.appendChild(buttonContent);
+            
 
 
             // Insert the button into the DOM
@@ -79,68 +83,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
     }
 
-    else if (message.youtubeLink) {
-        /* console.log("Received YouTube Link:", message.youtubeLink); */
-        // You can now use youtubeLink here as needed
-        youtubeLink = message.youtubeLink;
-        
-        
-        if(isYouTubeLink(youtubeLink) === false) {
-            console.log("No Embedded Youtube Videos detected");
-
-            const newHeading = document.createElement("h2");
-
-            // and give it some content
-            const newContent = document.createTextNode("No Youtube Videos detected");
-
-            newHeading.id = "No-Youtube-Videos-Message";
-
-            // add the text node to the newly created div
-            newHeading.appendChild(newContent);
-
-            // add the newly created element and its content into the DOM
-            const currentDiv = document.getElementById("videoList");
-
-            const transcriberTextArea = document.getElementById("output");
-
-            transcriberTextArea.innerText = "No Embedded Youtube Videos detected";
-        
-            ///document.body.appendChild(newHeading);
-            //document.body.insertBefore(newHeading, currentDiv);
-        } 
-
-        /*else {
-            
-            // Was for single transcriptions
-            /* btn.addEventListener("click", async () => {
-                transcribe(youtubeLink)
-            }); */
-
-            /* const selectedTranscription = document.createElement("button");
-
-            // and give it some content
-            const newContent = document.createTextNode("Video Transcription");
-
-            selectedTranscription.id = "selectableButton";
-
-            // add the text node to the newly created div
-            selectedTranscription.appendChild(newContent);
-
-            // add the newly created element and its content into the DOM
-            const currentDiv = document.getElementById("videoList");
-        
-            document.body.appendChild(selectedTranscription);
-            document.body.insertBefore(selectedTranscription, currentDiv);
-
-            selectedTranscription.addEventListener("click", async () => {
-                transcribe(youtubeLink)
-            }); 
-        }*/
-
-
-        
-
-    }
 
 });
 
@@ -293,34 +235,16 @@ function detectYouTubeVideos() {
                             console.log("No Youtube Video Detected");
                             //Add this message to the trascription textarea
                         }
-                    })
-
-                    /* if(youtubeVideo) {
-        
-                        let youtubeLink = youtubeVideo.getAttribute('src');
-        
-                        // If src is not available, check nitro-og-src
-                        if (!youtubeLink) {
-                            youtubeLink = youtubeVideo.getAttribute('nitro-og-src');
-                            
-                        }
-        
-                        // If nitro-og-src is also not available, check nitro-lazy-src
-                        if (!youtubeLink) {
-                            youtubeLink = youtubeVideo.getAttribute('nitro-lazy-src');
-                        }
-
-                        console.log("YouTube Link", youtubeLink);
-                        chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
-
-                    }
-        
-                    else {
-                        console.log("No Youtube Video Detected");
-                        //Add this message to the trascription textarea
-                    } */                
+                    })   
                     
+                    if(allYoutubeVideos.length == 0) 
+                    {
+                        chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks});
+                    }
+
                 }
+
+                
 
             })
 
