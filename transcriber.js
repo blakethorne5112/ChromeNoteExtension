@@ -210,8 +210,6 @@ function detectYouTubeVideos() {
 
     console.log('detectYoutubeVideos function called');
 
-    let youtubeLink;
-
     chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
         var url = tabs[0].url;
 
@@ -231,6 +229,9 @@ function detectYouTubeVideos() {
                 target: { tabId: tabs[0].id },
                 
                 function: () => {
+
+                    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+
                     // This runs in the context of the active tab (webpage)
                     const youtubeVideo = document.querySelector('iframe');
                     
@@ -261,25 +262,23 @@ function detectYouTubeVideos() {
                             if (!youtubeLink) {
                                 youtubeLink = currentVid.getAttribute('nitro-lazy-src');
                             }
+                            
+                            if(youtubeRegex.test(youtubeLink)) {
+                                console.log(youtubeLink, "Certified Link");
+                                youtubeLinks.push(youtubeLink);
 
-                            youtubeLinks.push(youtubeLink);
+                            }
+                           
     
                             
                             /* chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
                             chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks}); */
 
-                            
-                            /* chrome.runtime.sendMessage({ done: done}); */
-                            console.log("jsljsdl");
-                            console.log(i);
 
                             if(i == totalVidsTraversed - 1) {
-                                console.log("if condition ");
                                 chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
                                 chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks});
                             }
-
-
 
                             i += 1;
                         }
