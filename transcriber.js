@@ -48,10 +48,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         message.youtubeLinks.forEach((youtubeLink, index) => {
 
             const selectedTranscription = document.createElement("button");
-            const buttonContent = document.createTextNode(`Transcribe Video ${index + 1}`);
+            const buttonContent = document.createTextNode(`Transcribe Video ${index + 1} `);
+            
+            const icon = document.createElement("icon");
+            icon.className="fa fa-youtube-play"
+            
+
 
             selectedTranscription.id = `selectableButton${index}`;
+            selectedTranscription.style.backgroundColor = 'red';
+            selectedTranscription.style.color = 'white';
+            
+            /* selectedTranscription.insertAdjacentHTML(<i class="fa fa-youtube-play"></i>); */
+
             selectedTranscription.appendChild(buttonContent);
+            selectedTranscription.appendChild(icon);
+
 
             // Insert the button into the DOM
             const currentDiv = document.getElementById("videoList");
@@ -268,15 +280,9 @@ function detectYouTubeVideos() {
                                 youtubeLinks.push(youtubeLink);
 
                             }
-                           
-    
-                            
-                            /* chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
-                            chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks}); */
-
 
                             if(i == totalVidsTraversed - 1) {
-                                chrome.runtime.sendMessage({ youtubeLink: youtubeLink });
+                                /* chrome.runtime.sendMessage({ youtubeLink: youtubeLink }); */
                                 chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks});
                             }
 

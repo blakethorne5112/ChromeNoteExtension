@@ -185,3 +185,9 @@ body {
   color: white;
   cursor: pointer;
 }
+
+button#tran {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
