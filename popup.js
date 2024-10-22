@@ -66,7 +66,7 @@ function displaySavedNotes() {
             editButton.className = "icon-button edit";
             editButton.innerHTML = '<i class="fas fa-edit"></i>';
             editButton.addEventListener("click", function(event) {
-                event.stopPropagation(); // Prevent triggering other actions
+                event.stopPropagation();
                 editNote(index);
             });
 
@@ -74,7 +74,7 @@ function displaySavedNotes() {
             deleteButton.className = "icon-button delete";
             deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
             deleteButton.addEventListener("click", function(event) {
-                event.stopPropagation(); // Prevent triggering other actions
+                event.stopPropagation();
                 deleteNote(index);
             });
 
@@ -91,7 +91,7 @@ function editNote(index) {
     chrome.storage.local.get({userNotes: []}, function(result) {
         const notes = result.userNotes;
         document.getElementById("note").value = notes[index];
-        editingIndex = index; // Set the index for the note being edited
+        editingIndex = index;
     });
 }
 
@@ -107,152 +107,62 @@ function deleteNote(index) {
         });
     });
 }
-// Function to scrape the text content of the current page from specific elements
-function scrapePageContent() {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      function: () => {
-        // Helper function to filter out unwanted elements
-        function isExcluded(element) {
-          const excludedClassesOrIds = ['toolbar', 'header']; // Add more as needed
-          const hasExcludedClass = excludedClassesOrIds.some(classOrId =>
-            element.classList.contains(classOrId) || element.id === classOrId
-          );
-          return hasExcludedClass;
-        }
-
-        // Function to extract text only from desired elements like <p> and <a>
-        function extractTextFromElements() {
-          let extractedText = [];
-
-          // Select the desired elements and exclude unwanted ones
-          document.querySelectorAll('p, a').forEach(element => {
-            if (!isExcluded(element)) {
-              // Add the innerText of the element if it's not excluded
-              extractedText.push(element.innerText.trim());
-            }
-          });
-
-          return extractedText.filter(Boolean); // Remove empty strings
-        }
-
-        return extractTextFromElements();
-      }
-    }, (results) => {
-      if (results && results[0].result) {
-        // Store the scraped content as an array of strings (words)
-        let scrapedContent = results[0].result;
-        console.log("Scraped Content: ", scrapedContent);
-
-        // Store or send the scraped content to be used by other features
-        storeScrapedContent(scrapedContent);
-      } else {
-        console.error('Scraping failed or no content found.');
-      }
-    });
-  });
-}
-
-// Function to store scraped content
-function storeScrapedContent(contentList) {
-  // Add your logic to store or process the content here
-  console.log("Stored content:", contentList);
-}
 
 // Function to generate citation
 function generateCitation() {
-    chrome.runtime.sendMessage({ action: 'generateCitation' }, (response) => {
-        if (chrome.runtime.lastError) {
-            console.error("Error generating citation:", chrome.runtime.lastError.message);
-            document.getElementById("citationResult").textContent = "Could not generate citation.";
-        } else if (response && response.citation) {
-            document.getElementById("citationResult").textContent = response.citation;
-        } else {
-            document.getElementById("citationResult").textContent = "Could not generate citation.";
-        }
-    });
-}
+    const style = document.getElementById('citationStyle')?.value || 'APA7';
+    const citationResult = document.getElementById('citationResult');
+    
+    // Set loading state
+    citationResult.textContent = 'Generating citation...';
 
-function generateCitation() {
-    const style = document.getElementById('citationStyle').value;
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        if (chrome.runtime.lastError) {
-            console.error("Error querying tabs:", chrome.runtime.lastError);
-            document.getElementById("citationResult").textContent = "Error: Could not access current tab.";
+        if (!tabs[0]?.id) {
+            citationResult.textContent = 'Error: Cannot access this page';
             return;
         }
-        
-        if (tabs.length === 0) {
-            console.error("No active tab found");
-            document.getElementById("citationResult").textContent = "Error: No active tab found.";
-            return;
-        }
-        
-        chrome.tabs.sendMessage(tabs[0].id, {action: "generateCitation", style: style}, function(response) {
-            if (chrome.runtime.lastError) {
-                console.error("Error sending message:", chrome.runtime.lastError);
-                document.getElementById("citationResult").textContent = "Error: Could not communicate with page.";
-                return;
-            }
-            
-            if (response && response.citation) {
-                console.log("Received citation:", response.citation);
-                document.getElementById("citationResult").textContent = response.citation;
-            } else {
-                console.error("No citation in response:", response);
-                document.getElementById("citationResult").textContent = "Could not generate citation.";
-            }
+
+        // Execute content script to make sure it's loaded
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            files: ['content.js']
+        }, () => {
+            // Send message to content script
+            chrome.tabs.sendMessage(
+                tabs[0].id,
+                { action: "generateCitation", style: style },
+                function(response) {
+                    if (chrome.runtime.lastError) {
+                        console.error("Citation error:", chrome.runtime.lastError);
+                        citationResult.textContent = 'Error: Please refresh the page and try again';
+                        return;
+                    }
+
+                    if (response && response.citation) {
+                        citationResult.textContent = response.citation;
+                    } else {
+                        citationResult.textContent = "Could not generate citation.";
+                    }
+                }
+            );
         });
     });
 }
 
-// initialize popup
+// Popup
 document.addEventListener('DOMContentLoaded', () => {
+    // Display existing notes
     displaySavedNotes();
-    scrapePageContent();
+    
+    // Citation lsietener
+    const generateButton = document.getElementById('generateCitation');
+    if (generateButton) {
+        generateButton.addEventListener('click', generateCitation);
+    }
 
-    // Event listener for citation generation
-    document.getElementById("generateCitation").addEventListener("click", generateCitation);
-
-    const plagiarismButton = document.getElementById("checkPlagiarism");
-    if (plagiarismButton) {
-        plagiarismButton.addEventListener("click", function() {
-            const note = document.getElementById("note").value;
-
-            document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
-            chrome.runtime.sendMessage({ 
-                action: 'checkPlagiarism',
-                note: note
-             }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error generating plagiarism result:", chrome.runtime.lastError.message);
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
-                } else if (response && response.plagiarism) {
-                    let plagiarisedText = "";
-                    plagiarisedText = response.plagiarism;
-                    if(plagiarisedText == ""){
-                        plagiarisedText = "No plagiarism found.";
-                    }
-                    document.getElementById("plagiarismResult").innerHTML = plagiarisedText;
-                } else if (response.error && response.error == 'You must be writing or editing a note to check plagiarism!') {
-                    document.getElementById("plagiarismResult").textContent = response.error;
-                } 
-                else {
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
-                }
-            });
-        });
+    // Finds style selector first for debugging
+    const styleSelector = document.getElementById('citationStyle');
+    if (!styleSelector) {
+        console.error('Citation style selector not found');
     }
 });
-
-// Function to store the scraped content
-function storeScrapedContent(contentArray) {
-  // Store in local storage (or send it to background.js for further handling)
-  chrome.storage.local.set({ scrapedContent: contentArray }, () => {
-    console.log('Scraped content saved.');
-  });
-}
-
-// Automatically run the scrapePageContent function when the content script is injected
-scrapePageContent();
