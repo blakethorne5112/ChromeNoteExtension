@@ -11,9 +11,6 @@ import { YoutubeTranscript, YoutubeTranscriptDisabledError,
 const btn = document.getElementById("transcribe-youtube-video");
 
 
-let youtubeLink;
-
-
 // Function to sanitize transcription text
 function sanitiseText(transcription) {
     return transcription
@@ -37,10 +34,49 @@ function isYouTubeLink(link) {
     return youtubeRegex.test(link);
 }
 
+/* function getYouTubeVideoIDfromEmbedded(link) {
+    // Regular expression to match and capture the YouTube video ID from embed URLs
+    const videoIDRegex = /youtube\.com\/embed\/([^?]+)/;
+
+    // Test the link against the regex
+    const match = link.match(videoIDRegex);
+
+    // If a match is found, return the video ID
+    if (match && match[1]) {
+        return match[1]; // The video ID
+    }
+
+    // Return null if no video ID is found
+    return null;
+} */
+
+function getYouTubeVideoID(link) {
+    // Regular expression to match and capture the YouTube video ID from 'watch?v=' URLs
+    const videoIDRegex = /youtube\.com\/watch\?v=([^&]+)/;
+
+    // Test the link against the regex
+    const match = link.match(videoIDRegex);
+
+    // If a match is found, return the video ID
+    if (match && match[1]) {
+        return match[1]; // The video ID
+    }
+
+    // Return null if no video ID is found
+    return null;
+}
+
+
+
+
+
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+    //  const url = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+    //  const videoID = getYouTubeVideoID(url);
+    //  console.log("Video ID", videoID);    
     
-    console.log(message.youtubeLinks.length);
 
     if(message.youtubeLinks.length == 0) {
         const p = document.getElementById("output");
@@ -55,7 +91,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         message.youtubeLinks.forEach((youtubeLink, index) => {
 
             const selectedTranscription = document.createElement("button");
-            const buttonContent = document.createTextNode(` Transcribe Video ${index + 1}`);
+            const buttonContent = document.createTextNode(` Transcribe YouTube Video ${index + 1}`);
             
             const icon = document.createElement("icon");
             icon.className="fa fa-youtube-play"
@@ -66,8 +102,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             
             selectedTranscription.appendChild(icon);
             selectedTranscription.appendChild(buttonContent);
-            
-
 
             // Insert the button into the DOM
             const currentDiv = document.getElementById("videoList");
@@ -152,7 +186,50 @@ async function transcribe(youtubeLink) {
         } else if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
             console.error("Error: No transcripts available in the selected language.");
             alert("Error: No transcripts available in the selected language.");
-        } else {
+        } else if(error instanceof YoutubeTranscriptError) {
+            console.log("Error for this ...............");
+
+
+            chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
+                var url = tabs[0].url;
+
+                chrome.scripting.executeScript({
+                    target: { tabId: tabs[0].id },
+                    
+                    function: () => {
+
+
+                        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+
+                        
+                        // This runs in the context of the active tab (webpage)
+                        const iFrames = document.querySelectorAll('iframe');
+                        
+                        const aLinks = document.querySelectorAll('a');
+
+                        const youtubeButtons = document.getElementsByClassName(".ytp-youtube-button ytp-button yt-uix-sessionlink");
+
+                        console.log(youtubeButtons);
+                        
+                        youtubeButtons.forEach((currentLink) => {
+
+                            console.log(currentLink);
+                            
+                        
+                        })
+
+
+                    }
+
+                    
+                })
+
+            });
+        
+            console.log("AJSLJSDLK");
+
+        } 
+        else {
             console.error("Error fetching transcript:", error);
             alert("An unexpected error occurred while fetching the transcript.");
         }
@@ -171,9 +248,32 @@ function detectYouTubeVideos() {
 
         if(isYouTubeLink(url) === true) {
 
-            btn.addEventListener("click", async () => {
+            console.log("url", url);
+            const selectedTranscription = document.createElement("button");
+            const buttonContent = document.createTextNode(` Transcribe YouTube Video`);
+
+            const icon = document.createElement("icon");
+            icon.className="fa fa-youtube-play"
+
+            selectedTranscription.id = ` Transcribe YouTube Video`;
+            selectedTranscription.style.backgroundColor = 'red';
+            selectedTranscription.style.color = 'white';
+            
+            selectedTranscription.appendChild(icon);
+            selectedTranscription.appendChild(buttonContent);
+
+            // Insert the button into the DOM
+            const currentDiv = document.getElementById("videoList");
+            document.body.insertBefore(selectedTranscription, currentDiv);
+
+            selectedTranscription.addEventListener("click", async () => {
+                console.log(`Transcribing video`, url);
+                await transcriptionOnYouTubeSite(url);
+            });
+
+            /* btn.addEventListener("click", async () => {
                 transcriptionOnYouTubeSite(url);
-            })
+            }) */
 
         }
 
