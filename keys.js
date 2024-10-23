@@ -6,6 +6,7 @@ chrome.runtime.onInstalled.addListener(() => {
     // Plagiarism Checker API Key and Search Engine ID
     chrome.storage.local.set({
         apiKeyPlagiarism: 'Add here',
+        apiKeyAIDetect: 'Add here',
         searchEngineIdPlagiarism: 'Add here'
     }, () => {
         console.log('Plagiarism API Key Updated.');
