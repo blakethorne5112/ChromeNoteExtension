@@ -10,7 +10,7 @@ body {
   
   /* Text area styling */
   #note {
-    width: 100%;
+    width: 90%;
     height: 120px;
     padding: 10px;
     margin-bottom: 15px;
@@ -24,9 +24,9 @@ body {
   
   /* Button styling */
   button {
-    width: 100%;
     padding: 10px;
     margin-top: 10px;
+    margin-right: 10px;
     border: none;
     border-radius: 5px;
     font-size: 14px;
@@ -41,6 +41,37 @@ body {
   
   button#saveNote:hover {
     background-color: #45a049;
+  }
+
+  button#generateCitation {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#generateCitation:hover {
+    background-color: #45a049;
+  }
+
+  button#checkPlagiarism {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#checkPlagiarism:hover {
+    background-color: #45a049;
+  }
+
+  button#detectBtn {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  button#detectBtn:hover {
+    background-color: #45a049;
+  }
+
+  #note-section {
+    text-align: center;
   }
   
   /* Saved notes section */
@@ -67,24 +98,68 @@ body {
     justify-content: space-between;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
+    width: 100%; /* Make the note item take up full width */
+    box-sizing: border-box; /* Ensure padding is included in the width calculation */
+}
+
+.noteItem:hover {
+  background-color: #f8f8f8;  /* Lighter hover color */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.noteText {
+  max-height: 100px;  /* Adjust as necessary */
+  overflow-y: auto;   /* Enables scrolling if content exceeds max-height */
+  flex-grow: 1;
+  padding-right: 10px;  /* Adds space between text and buttons */
+  margin-right: 10px;
+}
+
+/* Citation stuff */
+#citationResult {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  word-wrap: break-word;
+}
+
+#citationSection {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+#citationStyle {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#generateCitation {
+  width: 100%;
+  background-color: #2196F3;
+  color: white;
+}
+
+#generateCitation:hover {
+  background-color: #1976D2;
+}
+
+/* Note Item Stuff */
   
   .noteItem:hover {
     background-color: #f0f0f0;
   }
   
-  /* Note text */
-  .noteText {
-    flex-grow: 1;
-    padding-right: 10px;
-  }
-  
   /* Icon button styling */
   .icon-button {
-    background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
     border-radius: 3px;
     transition: background-color 0.3s ease;
   }
@@ -108,86 +183,21 @@ body {
     color: #4CAF50;
   }
 
-  p {
-    font-size: medium;
-  }
-
-  #voice-text {
+  #searchBar {
     width: 90%;
-    height: 70px;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 14px;
-    resize: none;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: #fff;
-  }
-
-  #output {
-    width: 90%;
-    height: 50px;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    resize: none;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);  
-    background-color: #fff;
-  }
-
-
-  #transcribe-youtube-video {
-    padding: 10px;
-    border: none;
-    background-color: red;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-#selectableButton {
-    padding: 10px;
-    border: none;
-    background-color: rgb(255, 0, 0);
-    color: white;
-    border-radius: 5px;
-
-    cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-#microphone-button {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+#searchBar:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Green glow to match buttons */
 }
 
 
-#copy-transcription {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-
-#save-transcript {
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-}
-
-button#tran {
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-}
+  
