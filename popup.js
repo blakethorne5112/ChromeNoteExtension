@@ -134,7 +134,7 @@ function generateCitation() {
                 function(response) {
                     if (chrome.runtime.lastError) {
                         console.error("Citation error:", chrome.runtime.lastError);
-                        citationResult.textContent = 'Error: Please refresh the page and try again';
+                        citationResult.textContent = 'Error, please refresh the page.';
                         return;
                     }
 

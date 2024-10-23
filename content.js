@@ -1,5 +1,52 @@
 // Finds author 
 function findAuthor() {
+    
+    // Limits author name to 2 words (scuffed function lol)
+    function wordLimit(text) {
+        return text
+            .trim()
+            .replace(/^by\s+|written by\s+|author:\s+/i, '') // Remove common prefixes
+            .split(/\s+/) // Split into words
+            .slice(0, 2) // Take first two words
+            .join(' ') // Join back together
+            .trim();
+    }
+
+    // Another scuffed function that just rmoves numbers, seperate from previous function cause twitter and reddit names
+    // can have numbers but authors on news sites etc. should not
+    function removeNumbers(text) {
+        return text
+            .replace(/\d+/g, '') // Remove all numbers
+            .replace(/\s+/g, ' ') // Normalize spaces
+            .trim();
+    }
+
+    // Twitter check
+    if (window.location.hostname.includes('twitter.com') || window.location.hostname.includes('x.com')) {
+        // Try to get author
+        const tweetAuthor = document.querySelector('[data-testid="User-Name"]')?.textContent ||
+                           document.querySelector('[data-testid="tweet"] a[role="link"]')?.textContent ||
+                           document.querySelector('article [dir="ltr"]')?.textContent;
+        
+        if (tweetAuthor) {
+            return wordLimit(tweetAuthor.split('@')[0]); // removes the @
+        }
+    }
+
+    // Reddit check
+    if (window.location.hostname.includes('reddit.com')) {
+       // Targets exact element
+       const redditAuthor = document.querySelector('a.author-name[href^="/user/"]')?.textContent;
+       
+       if (redditAuthor) {
+           let authorText = redditAuthor
+               .trim()
+               .replace(/^u\//, ''); // Removes the /u
+           
+           return authorText;
+       }
+    }
+
     // Check meta tags first
     const metaSelectors = [
         'meta[name="author"]',
@@ -12,7 +59,7 @@ function findAuthor() {
     for (let selector of metaSelectors) {
         const metaTag = document.querySelector(selector);
         if (metaTag?.content) {
-            return metaTag.content.trim();
+            return removeNumbers(wordLimit(metaTag.content.trim()));
         }
     }
 
@@ -21,7 +68,7 @@ function findAuthor() {
     if (schemaNode) {
         const authorNode = schemaNode.querySelector('[itemprop="author"]');
         if (authorNode) {
-            return authorNode.textContent.trim();
+            return removeNumbers(wordLimit(authorNode.textContent.trim()));
         }
     }
 
@@ -48,7 +95,7 @@ function findAuthor() {
             }
             const authorText = clone.textContent.trim();
             if (authorText) {
-                return authorText.replace(/^by\s+|written by\s+|author:\s+/i, '').trim();
+                return removeNumbers(wordLimit(authorText.replace(/^by\s+|written by\s+|author:\s+/i, '').trim()));
             }
         }
     }
@@ -59,7 +106,7 @@ function findAuthor() {
         const text = paragraphs[i].textContent;
         const byMatch = text.match(/(?:by|written by)\s+([^.|\n]+)/i);
         if (byMatch) {
-            return byMatch[1].trim();
+            return removeNumbers(wordLimit(byMatch[1].trim()));
         }
     }
 
@@ -109,9 +156,27 @@ function determineContentType() {
     return 'webpage';
 }
 
+function findTitle() {
+    // Get browser tab title
+    let title = document.title;
+
+    // Common separators in page titles
+    const separators = [' | ', ' - ', ' – ', ' — ', ' » '];
+    
+    // Finds content before seperator (for example if source is Reddit thread it removes "- Reddit" or w/e)
+    for (let separator of separators) {
+        if (title.includes(separator)) {
+            title = title.split(separator)[0].trim();
+            break;
+        }
+    }
+
+    return title || 'Untitled Page';
+}
+
 // Generates citation based on fromat
 function generateCitation(style) {
-    const title = document.title;
+    const title = findTitle();
     const url = window.location.href;
     const author = findAuthor();
     const date = findPublicationDate();
@@ -197,7 +262,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         } catch (error) {
             console.error('Error generating citation:', error);
             sendResponse({
-                citation: 'Error generating citation. Please try again.',
+                citation: 'Error generating citation.',
                 error: error.message
             });
         }
