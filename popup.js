@@ -1,4 +1,4 @@
-let editingIndex = -1; // This will track if the user is editing an existing note
+let editingIndex = -1; // Tracks if user is editing an existing note
 
 // Function to save or update a note
 document.getElementById("saveNote").addEventListener("click", function() {
@@ -87,20 +87,75 @@ function deleteNote(index) {
     });
 }
 
-// Function to scrape the page content and pre-fill the note input
+// Citation generator
+function generateCitation() {
+    const style = document.getElementById('citationStyle')?.value || 'APA7';
+    const citationResult = document.getElementById('citationResult');
+    
+    // Loading
+    citationResult.textContent = 'Making citation';
+
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if (!tabs[0]?.id) {
+            citationResult.textContent = 'Couldnt access page';
+            return;
+        }
+
+        // Makes sure script is loaded first
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            files: ['content.js']
+        }, () => {
+            // Send message to content script
+            chrome.tabs.sendMessage(
+                tabs[0].id,
+                { action: "generateCitation", style: style },
+                function(response) {
+                    if (chrome.runtime.lastError) {
+                        console.error("Citation error:", chrome.runtime.lastError);
+                        citationResult.textContent = 'Error: Please refresh the page and try again';
+                        return;
+                    }
+
+                    if (response && response.citation) {
+                        citationResult.textContent = response.citation;
+                    } else {
+                        citationResult.textContent = "Could not generate citation.";
+                    }
+                }
+            );
+        });
+    });
+}
+
+// Function to scrape page content and pre-fill the note input
 function scrapePageContent() {
     chrome.runtime.sendMessage({ action: 'scrapePage' }, (response) => {
-        if (response && response.contentList) {
-            const contentString = response.contentList.join('\n');
-            document.getElementById("note").value = contentString;
+        if (response && response.content) {
+            document.getElementById("note").value = response.content;
         } else {
             document.getElementById("note").value = "Could not scrape content.";
         }
     });
 }
 
-// Initialize the popup
+// Initialize popup with event listeners
 document.addEventListener('DOMContentLoaded', () => {
-    displaySavedNotes(); // Display saved notes
-    scrapePageContent(); // Pre-fill the note input with scraped content
+    // Display existing notes
+    displaySavedNotes();
+    
+    // Add event listener for citation generation
+    const generateButton = document.getElementById('generateCitation');
+    if (generateButton) {
+        generateButton.addEventListener('click', generateCitation);
+    }
+
+    // Ensure citation style selector exists
+    const styleSelector = document.getElementById('citationStyle');
+    if (!styleSelector) {
+        console.error('Citation style selector not found');
+    }
+
+    // Initialize scraping
+    scrapePageContent();
 });

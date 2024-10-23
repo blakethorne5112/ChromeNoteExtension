@@ -3,14 +3,24 @@
   "version": "1.0",
   "manifest_version": 3,
   "description": "A tool for taking efficient notes from web pages",
-  "action": {
-    "default_popup": "popup.html"
-  },
   "permissions": [
-    "activeTab",
-    "scripting"
+      "activeTab",
+      "storage",
+      "scripting"
+  ],
+  "host_permissions": [
+      "<all_urls>"
+  ],
+  "action": {
+      "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
   ],
   "background": {
-    "service_worker": "background.js"
+      "service_worker": "background.js"
   }
 }
