@@ -77,6 +77,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     //  const videoID = getYouTubeVideoID(url);
     //  console.log("Video ID", videoID);    
     
+    console.log(message.titles);
 
     if(message.youtubeLinks.length == 0) {
         const p = document.getElementById("output");
@@ -85,33 +86,73 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     else if(message.youtubeLinks) {
+
         console.log("Arrays");
         console.log(message.youtubeLinks);
 
+        // Create the main dropdown button for transcribing videos
+        const transcriberOptions = document.createElement("button");
+        const buttonContent = document.createTextNode(` Transcribe Videos`);
+
+        const icon = document.createElement("i");  // Use <i> for FontAwesome icons
+        icon.className = "fa fa-youtube-play";
+
+        transcriberOptions.id = `selectableButton`;
+        transcriberOptions.style.backgroundColor = 'red';
+        transcriberOptions.style.color = 'white';
+        transcriberOptions.style.padding = '10px';
+
+        transcriberOptions.appendChild(icon);
+        transcriberOptions.appendChild(buttonContent);
+
+        // Create the dropdown container (initially hidden)
+        const dropdownMenu = document.createElement("div");
+        dropdownMenu.style.display = 'none';  // Hidden initially
+        dropdownMenu.style.position = 'absolute';
+        dropdownMenu.style.backgroundColor = '#f1f1f1';
+        dropdownMenu.style.minWidth = '160px';
+
+        // Insert the button into the DOM
+        const currentDiv = document.getElementById("videoList");
+        document.body.insertBefore(transcriberOptions, currentDiv);
+        document.body.insertBefore(dropdownMenu, currentDiv);
+
+        // Toggle dropdown menu visibility on button click
+        transcriberOptions.addEventListener("click", () => {
+            dropdownMenu.style.display = (dropdownMenu.style.display === 'none') ? 'block' : 'none';
+        });
+
+        // Loop through the YouTube links and create transcription buttons for each video
         message.youtubeLinks.forEach((youtubeLink, index) => {
 
             const selectedTranscription = document.createElement("button");
-            const buttonContent = document.createTextNode(` Transcribe YouTube Video ${index + 1}`);
-            
-            const icon = document.createElement("icon");
-            icon.className="fa fa-youtube-play"
+            const buttonContent = document.createTextNode(`Transcribe Video ${index + 1}`);
 
-            selectedTranscription.id = `selectableButton${index}`;
+            selectedTranscription.id = ` selectableButton${index}`;
             selectedTranscription.style.backgroundColor = 'red';
             selectedTranscription.style.color = 'white';
-            
-            selectedTranscription.appendChild(icon);
+            selectedTranscription.style.border = 'none';
+            selectedTranscription.style.width = '100%';  // Make buttons full-width in the dropdown
+            selectedTranscription.style.display = 'block';  // Make sure buttons are block-level elements
+            selectedTranscription.style.textAlign = 'middle';  // Align text to the left for dropdown style
+
             selectedTranscription.appendChild(buttonContent);
 
-            // Insert the button into the DOM
-            const currentDiv = document.getElementById("videoList");
-            document.body.insertBefore(selectedTranscription, currentDiv);
+            // Append each button to the dropdown menu
+            dropdownMenu.appendChild(selectedTranscription);
 
+            // Event listener for individual video transcription
             selectedTranscription.addEventListener("click", async () => {
                 console.log(`Transcribing video ${index + 1}:`, youtubeLink);
-                await transcribe(youtubeLink)
+                await transcribe(youtubeLink);  // Assuming transcribe is a valid function that handles the transcription process
             });
+        });
 
+        // Hide dropdown menu when clicking outside of it
+        window.addEventListener("click", (event) => {
+            if (!transcriberOptions.contains(event.target)) {
+                dropdownMenu.style.display = 'none';
+            }
         });
 
         
@@ -241,6 +282,11 @@ function detectYouTubeVideos() {
 
     console.log('detectYoutubeVideos function called');
 
+    /* 
+    const selectedTranscription = document.createElement("button");
+    const currentDiv = document.getElementById("videoList");
+    document.body.insertBefore(selectedTranscription, currentDiv); */
+
     chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
         var url = tabs[0].url;
 
@@ -279,6 +325,26 @@ function detectYouTubeVideos() {
 
         else {
 
+                /* const transcriberOptions = document.createElement("button");
+                const buttonContent = document.createTextNode(` Transcribe Videos`);
+                
+                const icon = document.createElement("icon");
+                icon.className="fa fa-youtube-play"
+
+                transcriberOptions.id = `selectableButton`;
+                transcriberOptions.style.backgroundColor = 'red';
+                transcriberOptions.style.color = 'white';
+                
+                transcriberOptions.appendChild(icon);
+                transcriberOptions.appendChild(buttonContent);
+
+                // Insert the button into the DOM
+                const currentDiv = document.getElementById("videoList");
+                document.body.insertBefore(transcriberOptions, currentDiv);
+
+
+                transcriberOptions.addEventListener("click", () => {console.log("SLJFSKlks")}); */
+
             chrome.scripting.executeScript({
                 target: { tabId: tabs[0].id },
                 
@@ -286,17 +352,16 @@ function detectYouTubeVideos() {
 
                     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
 
-                    // This runs in the context of the active tab (webpage)
-                    const youtubeVideo = document.querySelector('iframe');
-                    
+
                     const allYoutubeVideos = document.querySelectorAll('iframe');
                     const youtubeLinks = []; // Array to store YouTube links
-                    let done = false;
+                    const titles = [];
+                  
                     
                     let i = 0;
-                    const totalVidsTraversed = allYoutubeVideos.length;
+                    let j = 0;
 
-                    console.log(totalVidsTraversed);
+                    const totalVidsTraversed = allYoutubeVideos.length;
                     
 
                     allYoutubeVideos.forEach((currentVid) => {
@@ -319,13 +384,21 @@ function detectYouTubeVideos() {
                             
                             if(youtubeRegex.test(youtubeLink)) {
                                 console.log(youtubeLink, "Certified Link");
-                                youtubeLinks.push(youtubeLink);
+                                youtubeLinks.push(youtubeLink);                             
+                                if(currentVid.title) {
+                                    titles.push(currentVid.title);
+                                } 
 
+                                else {
+                                    titles.push("no-name-provided-for-video");
+                                }
+                                j++;
                             }
 
                             if(i == totalVidsTraversed - 1) {
                                 /* chrome.runtime.sendMessage({ youtubeLink: youtubeLink }); */
-                                chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks});
+                                chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks, titles: titles});
+                                
                             }
 
                             i += 1;
@@ -374,7 +447,7 @@ async function transcriptionOnYouTubeSite() {
 
                 // Process the transcript
                 transcriptArr.forEach((transcriptLine) => {
-                    console.log(transcriptLine.text);
+                    console.log(transcriptLine);
                     const sanitizedLine = sanitiseText(transcriptLine.text);
                     lines += sanitizedLine + "\n\n"; 
                 });
@@ -386,7 +459,7 @@ async function transcriptionOnYouTubeSite() {
                         let transcriptArr = await YoutubeTranscript.fetchTranscript(url, { lang: 'en-US' });
 
                         transcriptArr.forEach((transcriptLine) => {
-                            console.log(transcriptLine.text);
+                            console.log(transcriptLine);
                             const sanitizedLine = sanitiseText(transcriptLine.text);
                             lines += sanitizedLine + "\n\n";
                         });

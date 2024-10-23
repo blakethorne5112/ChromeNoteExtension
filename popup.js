@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (speechRecognition) {
         console.log("Your Browser supports speech Recognition");
 
-       
+
 
         const micBtn = document.getElementById("microphone-button");
         const micIcon = micBtn.querySelector("i");
