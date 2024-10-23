@@ -21,15 +21,22 @@
       <h3>Notes</h3>
       <div id="editor-container" style="height: 150px;"></div>
       <button id="saveNote">Save Note</button>
-      <button id="generateCitation">Generate Citation</button>
       <button id="checkPlagiarism">Check Note for Plagiarism</button>
       <button id="detectBtn">Check for AI Content</button>
     </div>
     <div id="aiResult"></div>
 
-    <div id="citation-section">
-      <div id="citationResult" class="citationResult"></div>
-    </div>
+    <div id="citationSection">
+      <h3>Citation Generator</h3>
+      <select id="citationStyle">
+          <option value="APA7">APA7</option>
+          <option value="Harvard">Harvard</option>
+          <option value="MLA">MLA</option>
+          <option value="Chicago">Chicago</option>
+      </select>
+      <button id="generateCitation">Generate Citation</button>
+      <div id="citationResult"></div>
+  </div>
 
     <div id="plagiarism-section">
       <div id="plagiarismResult" class="plagiarismResult"></div>

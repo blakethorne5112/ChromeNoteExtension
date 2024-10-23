@@ -170,17 +170,44 @@ function storeScrapedContent(contentList) {
   console.log("Stored content:", contentList);
 }
 
-// Function to generate citation
+// Citation generator
 function generateCitation() {
-    chrome.runtime.sendMessage({ action: 'generateCitation' }, (response) => {
-        if (chrome.runtime.lastError) {
-            console.error("Error generating citation:", chrome.runtime.lastError.message);
-            document.getElementById("citationResult").textContent = "Could not generate citation.";
-        } else if (response && response.citation) {
-            document.getElementById("citationResult").textContent = response.citation;
-        } else {
-            document.getElementById("citationResult").textContent = "Could not generate citation.";
+    const style = document.getElementById('citationStyle')?.value || 'APA7';
+    const citationResult = document.getElementById('citationResult');
+    
+    // Loading
+    citationResult.textContent = 'Making citation';
+
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if (!tabs[0]?.id) {
+            citationResult.textContent = 'Couldnt access page';
+            return;
         }
+
+        // Makes sure script is loaded first
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            files: ['content.js']
+        }, () => {
+            // Send message to content script
+            chrome.tabs.sendMessage(
+                tabs[0].id,
+                { action: "generateCitation", style: style },
+                function(response) {
+                    if (chrome.runtime.lastError) {
+                        console.error("Citation error:", chrome.runtime.lastError);
+                        citationResult.textContent = 'Error: Please refresh the page and try again';
+                        return;
+                    }
+
+                    if (response && response.citation) {
+                        citationResult.textContent = response.citation;
+                    } else {
+                        citationResult.textContent = "Could not generate citation.";
+                    }
+                }
+            );
+        });
     });
 }
 
@@ -189,9 +216,18 @@ document.addEventListener('DOMContentLoaded', () => {
     displaySavedNotes();
     scrapePageContent();
 
-    // Event listener for citation generation
-    document.getElementById("generateCitation").addEventListener("click", generateCitation);
+    // Add event listener for citation generation
+    const generateButton = document.getElementById('generateCitation');
+    if (generateButton) {
+        generateButton.addEventListener('click', generateCitation);
+    }
 
+    // Ensure citation style selector exists
+    const styleSelector = document.getElementById('citationStyle');
+    if (!styleSelector) {
+        console.error('Citation style selector not found');
+    }
+    
     //AI detection function
     document.getElementById('detectBtn').addEventListener('click', async () => {
         chrome.storage.local.get('scrapedContent', (result) => {
