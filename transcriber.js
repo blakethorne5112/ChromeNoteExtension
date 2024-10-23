@@ -238,27 +238,22 @@ async function transcribe(youtubeLink) {
                     target: { tabId: tabs[0].id },
                     
                     function: () => {
-
-
-                        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-
+                        const links = document.querySelectorAll('a');
                         
-                        // This runs in the context of the active tab (webpage)
-                        const iFrames = document.querySelectorAll('iframe');
+                        // Select all <a> elements with the class ytp-youtube-button
+                        const youtubeLinks = document.querySelectorAll('a.ytp-youtube-button.ytp-button.yt-uix-sessionlink');
+                        console.log(youtubeLinks);
                         
-                        const aLinks = document.querySelectorAll('a');
+                        console.log("++++++++++++++++++++")
+                        // Loop through each link and log the href attribute
+                        links.forEach((link, index) => {
+                            console.log(`YouTube Link ${index + 1}:`, link.getAttribute('href'));
+                        });
 
-                        const youtubeButtons = document.getElementsByClassName(".ytp-youtube-button ytp-button yt-uix-sessionlink");
+                        console.log("++++++++++++++++++++")
 
-                        console.log(youtubeButtons);
+                        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/
                         
-                        youtubeButtons.forEach((currentLink) => {
-
-                            console.log(currentLink);
-                            
-                        
-                        })
-
 
                     }
 
