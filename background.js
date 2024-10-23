@@ -20,22 +20,6 @@ function ensureCheckPlagiarismScriptInjected(tabId, callback) {
     });
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-    console.log('Note Taking Extension Installed');
-
-    // Fetch and log the apiKeyPlagiarism from local storage correctly
-    chrome.storage.local.get('apiKeyPlagiarism', (data) => {
-        // If the key exists in storage, it will log it, otherwise log a placeholder
-        if (data.apiKeyPlagiarism) {
-            console.log('Plagiarism API Key:', data.apiKeyPlagiarism);
-        } else {
-            console.log('Plagiarism API Key is not set yet.');
-        }
-    });
-});
-
-
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case 'scrapePage':
@@ -51,14 +35,147 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return true;
 
         case 'checkPlagiarism':
-            console.log("Checking plagiarism...");
-            checkPlagiarism(sendResponse);
-            return true;
-
+            {
+                chrome.storage.local.get(['apiKeyPlagiarism', 'searchEngineIdPlagiarism'], (data) => {
+                    // If the key exists in storage, it will log it, otherwise log a placeholder
+                    if (data.apiKeyPlagiarism && data.searchEngineIdPlagiarism) {
+                        console.log('Plagiarism API Key:', data.apiKeyPlagiarism);
+                        console.log('Plagiarism Search Engine Id:', data.searchEngineIdPlagiarism);
+                        let apiKey = data.apiKeyPlagiarism;
+                        let searchId = data.searchEngineIdPlagiarism;
+                        const query = message.note;
+                        console.log("Query Retrieved:", query);
+                        try {
+                            if (!query || query.trim() === "") {
+                                throw new Error("InvalidNoteError");
+                            }
+                            (async () => {
+                                console.log(`API Key: ${apiKey}, Search Engine ID: ${searchId}`);
+                                const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchId}&q=${encodeURIComponent(query)}`;
+                                const response = await fetch(url);
+                                console.log('Response:', response);
+                                if (!response.ok) {
+                                    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+                                }
+                
+                                const plagiarismResults = await response.json();
+        
+                                console.log('plagiarismResults:', plagiarismResults);
+                                // Check if items exist in the response
+                                if (plagiarismResults.items && plagiarismResults.items.length > 0) {
+                                    // Send the results back as a response
+                                    let plagiarisedText = "";
+                                    plagiarismResults.items.forEach(item => {
+                                        const { mostSimilarChunk, highestSimilarity } = extractSimilarChunks(query, item.snippet);
+                                        console.log(`Similarity: ${highestSimilarity}% for chunk: "${mostSimilarChunk}" compared to snippet: "${item.snippet}"`);
+                                        if(highestSimilarity > 90){
+                                            //If the sentence is plagiarised, return the link to the website it was found at and the snippet
+                                            plagiarisedText += `
+                                                <strong>Plagiarism found at:</strong> 
+                                                <a href="${item.link}" target="_blank" style="color: blue;">${item.link}</a>
+                                                <br>
+                                                <strong>Snippet:</strong> ${item.snippet}
+                                                <br>
+                                                <strong>Similarity:</strong> 
+                                                <span style="color: red; font-weight: bold;">${(highestSimilarity).toFixed(2)}%</span>
+                                                <br><br>`;
+                                            console.log(`Plagiarism found at: ${item.link} with snippet: ${item.snippet}. Similarity: ${highestSimilarity}%`);
+                                        }
+                                    });
+                                    sendResponse({ plagiarism: plagiarisedText });
+                                } else {
+                                    // No results found
+                                    sendResponse({ error: 'No results found for the given query' });
+                                }
+                            })();
+                        } catch (error) {
+                            if(error = "InvalidNoteError"){
+                                sendResponse({ error: 'You must be writing or editing a note to check plagiarism!' });
+                            }
+                            else{
+                                console.error('Error:', error);
+                                sendResponse({ error: 'Failed to check plagiarism' });                        
+                            }
+                        }
+                    } else {
+                        console.log('Keys not set yet.');
+                        sendResponse({ error: 'Failed to check plagiarism' });
+                    }
+                });
+                return true;
+            }
         default:
             console.warn(`Unhandled action: ${message.action}`);
     }
 });
+
+function extractSimilarChunks(note, snippet, windowSize = 5) {
+    // Break the note into words
+    const noteWords = note.split(/\s+/);
+    const snippetLength = snippet.split(/\s+/).length;
+
+    let mostSimilarChunk = "";
+    let highestSimilarity = 0;
+
+    // Iterate through the note in a sliding window fashion
+    for (let i = 0; i <= noteWords.length - snippetLength; i++) {
+        // Extract a chunk of the note with a similar word count to the snippet
+        const chunk = noteWords.slice(i, i + snippetLength).join(" ");
+        
+        // Calculate similarity between this chunk and the snippet
+        const similarity = compareText(chunk, snippet);
+
+        // Keep track of the most similar chunk
+        if (similarity > highestSimilarity) {
+            highestSimilarity = similarity;
+            mostSimilarChunk = chunk;
+        }
+    }
+
+    return { mostSimilarChunk, highestSimilarity };
+}
+
+function levenshtein(a, b) {
+    const matrix = [];
+
+    // Create the initial matrix
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    // Fill the matrix
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // Substitution
+                    matrix[i][j - 1] + 1,     // Insertion
+                    matrix[i - 1][j] + 1      // Deletion
+                );
+            }
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+function compareText(query, snippet) {
+    // Normalize and remove non-word characters
+    query = query.toLowerCase().replace(/\W+/g, ' ').trim();
+    snippet = snippet.toLowerCase().replace(/\W+/g, ' ').trim();
+
+    const distance = levenshtein(query, snippet);
+    const maxLen = Math.max(query.length, snippet.length);
+
+    // Calculate similarity as a percentage
+    const similarity = ((maxLen - distance) / maxLen) * 100;
+    return similarity;
+}
 
 // Function to generate citation
 function generateCitation(callback) {
