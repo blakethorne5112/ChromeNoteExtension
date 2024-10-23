@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.runtime.sendMessage({ text: textToAnalyze, action: "aiDetection" }, function (response) {
           if (response && response.result) {
             const score = response.result.score; // Your score
-
+            console.log("AI Score (0-1):", response.result.score);
             // Calculate percentage
             const percentage = score * 100;
             document.getElementById('aiResult').textContent = 
