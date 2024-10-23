@@ -1,35 +1,45 @@
 editingIndex = -1; // This will track if the user is editing an existing note
+var quill; 
 
 // Function to save or update a note
 document.addEventListener('DOMContentLoaded', () => {
+    quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Enter your notes here...',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, false] }],
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'image']
+            ]
+        }
+    });
+    
     // Check if the element exists before adding the event listener
     const saveNoteButton = document.getElementById("saveNote");
     
     if (saveNoteButton) {
         saveNoteButton.addEventListener("click", function() {
-            const note = document.getElementById("note").value;
+            const note = quill.root.innerHTML;
 
             chrome.storage.local.get({userNotes: []}, function(result) {
                 const notes = result.userNotes;
 
                 if (editingIndex >= 0) {
-                    // If editing an existing note, update it
                     notes[editingIndex] = note;
-                    editingIndex = -1; // Reset the editing index after saving
+                    editingIndex = -1;
                 } else {
-                    // Otherwise, add a new note
                     notes.push(note);
                 }
 
-                // Save the updated notes array
                 chrome.storage.local.set({userNotes: notes}, function() {
                     console.log("Note saved!");
                     displaySavedNotes();
                 });
             });
 
-            // Clear the note input after saving
-            document.getElementById("note").value = '';
+            quill.root.innerHTML = ''; // Clear editor after saving
         });
     } else {
         console.error("Save Note button not found!");
@@ -60,13 +70,13 @@ function displaySavedNotes() {
 
             const noteText = document.createElement("div");
             noteText.className = "noteText";
-            noteText.textContent = note;
+            noteText.innerHTML = note; // Render saved notes as HTML
 
             const editButton = document.createElement("button");
             editButton.className = "icon-button edit";
             editButton.innerHTML = '<i class="fas fa-edit"></i>';
             editButton.addEventListener("click", function(event) {
-                event.stopPropagation(); // Prevent triggering other actions
+                event.stopPropagation();
                 editNote(index);
             });
 
@@ -74,7 +84,7 @@ function displaySavedNotes() {
             deleteButton.className = "icon-button delete";
             deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
             deleteButton.addEventListener("click", function(event) {
-                event.stopPropagation(); // Prevent triggering other actions
+                event.stopPropagation();
                 deleteNote(index);
             });
 
@@ -90,7 +100,7 @@ function displaySavedNotes() {
 function editNote(index) {
     chrome.storage.local.get({userNotes: []}, function(result) {
         const notes = result.userNotes;
-        document.getElementById("note").value = notes[index];
+        quill.root.innerHTML = notes[index];
         editingIndex = index; // Set the index for the note being edited
     });
 }
@@ -182,10 +192,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for citation generation
     document.getElementById("generateCitation").addEventListener("click", generateCitation);
 
+    // Event listener for plagiarism check
     const plagiarismButton = document.getElementById("checkPlagiarism");
     if (plagiarismButton) {
         plagiarismButton.addEventListener("click", function() {
-            const note = document.getElementById("note").value;
+            const note = quill.root.innerHTML;
 
             document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
             chrome.runtime.sendMessage({ 
@@ -235,7 +246,7 @@ function filterNotes() {
 
                 const noteText = document.createElement("div");
                 noteText.className = "noteText";
-                noteText.textContent = note;
+                noteText.innerHTML = note;
 
                 const editButton = document.createElement("button");
                 editButton.className = "icon-button edit";
