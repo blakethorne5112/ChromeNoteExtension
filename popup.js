@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const plagiarismButton = document.getElementById("checkPlagiarism");
     if (plagiarismButton) {
         plagiarismButton.addEventListener("click", function() {
-            const note = quill.root.innerHTML;
+            const note = quill.root.textContent;
 
             document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
             chrome.runtime.sendMessage({ 
