@@ -1,55 +1,138 @@
-chrome.runtime.onInstalled.addListener(() => {
-    console.log('Extension installed');
-});
+require('dotenv').config();  // Add this line to load .env file
 
+// Listener for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "summarizePage") {
         const pageContent = request.content;
-
-        // Call the summarization function (API logic)
-        summarizePageContent(pageContent, sendResponse);
-
-        // Return true to allow async response
-        return true;
+        // Use the fallback algorithm first
+        const fallbackResult = fallbackToAlgorithm(pageContent);
+        // Trim the summary to 200 words before sending it to the external API
+        const trimmedSummary = trimToWordLimit(fallbackResult.summary, 200);
+        
+        summarizeText(trimmedSummary)
+            .then(data => {
+                const apiSummary = data.result || 'No summary returned';
+                console.log(apiSummary);
+                sendResponse({ 
+                    summary: apiSummary, 
+                    keywords: fallbackResult.keywords 
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching summary:', error);
+                sendResponse({ 
+                    error: error.message, 
+                    keywords: fallbackResult.keywords 
+                });
+            });
+        return true; // Keep message channel open for asynchronous response
     }
 });
 
-
-// Define your OpenAI API key
-const apiKey = "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";
-async function summarizePageContent(pageContent, sendResponse) {
-
-    try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    { role: "system", content: "Summarize the following content." },
-                    { role: "user", content: pageContent }
-                ],
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data?.choices?.length && data.choices[0]?.message?.content) {
-            const summary = data.choices[0].message.content;
-            sendResponse({ summary });
-        } else {
-            sendResponse({ summary: "Error: No summary available." });
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        sendResponse({ summary: "Error summarizing page." });
-    }
+// Fallback algorithm for keyword extraction and summarization
+function fallbackToAlgorithm(content) {
+    const keywords = getKeywords(content);
+    const summary = summarizeContent(content);
+    return { keywords, summary };
 }
 
+function getKeywords(text, numKeywords = 10) {
+    const sentences = text.split('. ');
+    const wordFrequency = {};
+    const documentFrequency = {};
+
+    // Calculate word frequency and document frequency
+    sentences.forEach(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        const uniqueWords = new Set(words);
+        uniqueWords.forEach(word => {
+            if (word.length > 3) {
+                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+                documentFrequency[word] = (documentFrequency[word] || 0) + 1;
+            }
+        });
+    });
+
+    const numSentences = sentences.length;
+    const keywordScores = {};
+
+    // Calculate TF-IDF scores
+    for (const word in wordFrequency) {
+        const tf = wordFrequency[word];
+        const idf = Math.log(numSentences / (documentFrequency[word] || 1));
+        keywordScores[word] = tf * idf;
+    }
+
+    // Return top keywords
+    return Object.keys(keywordScores)
+        .sort((a, b) => keywordScores[b] - keywordScores[a])
+        .slice(0, numKeywords);
+}
+
+function summarizeContent(text, maxSentences = 3) {
+    const sentences = text.split('. ');
+    const wordFrequency = {};
+
+    // Calculate word frequency
+    sentences.forEach(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        words.forEach(word => {
+            if (word.length > 3) {
+                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+            }
+        });
+    });
+
+    // Score sentences based on word frequency
+    const sentenceScores = sentences.map(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        let score = 0;
+        words.forEach(word => {
+            if (wordFrequency[word]) {
+                score += wordFrequency[word];
+            }
+        });
+        return { sentence, score };
+    });
+
+    // Sort sentences by score and return the top ones
+    return sentenceScores
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxSentences)
+        .map(item => item.sentence)
+        .join('. ');
+}
+
+// Trims the summary to a maximum of 200 words
+function trimToWordLimit(text, maxWords = 200) {
+    const words = text.split(/\s+/);  // Split text by spaces
+    if (words.length > maxWords) {
+        return words.slice(0, maxWords).join(' ') + '...';  // Return first 200 words
+    }
+    return text;  // If fewer than 200 words, return the original text
+}
+
+function summarizeText(summary) {
+    const apiKey = 'L8EYWD9I2N260L6NSB4M7ZK4UXP6269L';  
+    const apiUrl = 'https://api.sapling.ai/api/v1/summarize'; 
+
+    console.log(summary);
+
+    const requestBody = {
+        key: apiKey,
+        text: summary
+    };
+
+    return fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    });
+}
