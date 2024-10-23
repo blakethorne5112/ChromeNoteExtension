@@ -211,7 +211,56 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.addEventListener('input', filterNotes);
+    }
+
+    displaySavedNotes();
 });
+
+// Function to display filtered notes based on search input
+function filterNotes() {
+    const searchTerm = document.getElementById("searchBar").value.toLowerCase();
+
+    chrome.storage.local.get({ userNotes: [] }, function(result) {
+        const notesList = document.getElementById("notesList");
+        notesList.innerHTML = '';
+
+        result.userNotes.forEach((note, index) => {
+            if (note.toLowerCase().includes(searchTerm)) {
+                const noteItem = document.createElement("div");
+                noteItem.className = "noteItem";
+
+                const noteText = document.createElement("div");
+                noteText.className = "noteText";
+                noteText.textContent = note;
+
+                const editButton = document.createElement("button");
+                editButton.className = "icon-button edit";
+                editButton.innerHTML = '<i class="fas fa-edit"></i>';
+                editButton.addEventListener("click", function(event) {
+                    event.stopPropagation(); // Prevent triggering other actions
+                    editNote(index);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "icon-button delete";
+                deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                deleteButton.addEventListener("click", function(event) {
+                    event.stopPropagation(); // Prevent triggering other actions
+                    deleteNote(index);
+                });
+
+                noteItem.appendChild(noteText);
+                noteItem.appendChild(editButton);
+                noteItem.appendChild(deleteButton);
+                notesList.appendChild(noteItem);
+            }
+        });
+    });
+}
 
 // Function to store the scraped content
 function storeScrapedContent(contentArray) {
