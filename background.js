@@ -26,38 +26,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             scrapePageContent(sendResponse);
             return true; // Indicates async response
 
-        case 'summarisePage':
-            chrome.storage.local.get(['apiKeySummary', 'apiUrlSummary'], (data) => {
-                // If the key exists in storage, it will log it, otherwise log a placeholder
-                if (data.apiKeySummary && data.apiUrlSummary) {
-                    console.log('Summary API Key:', data.apiKeySummary);
-                    console.log('Summary API URL:', data.apiUrlSummary);
-                    const pageContent = message.content;
-                    // Use the fallback algorithm first
-                    const fallbackResult = fallbackToAlgorithm(pageContent);
-                    // Trim the summary to 200 words before sending it to the external API
-                    const trimmedSummary = trimToWordLimit(fallbackResult.summary, 200);
-                    
-                    summariseText(trimmedSummary, data.apiKeySummary, data.apiUrlSummary)
-                        .then(data => {
-                            const apiSummary = data.result || 'No summary returned';
-                            console.log(apiSummary);
-                            sendResponse({ 
-                                summary: apiSummary, 
-                                keywords: fallbackResult.keywords 
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Error fetching summary:', error);
-                            sendResponse({ 
-                                error: error.message, 
-                                keywords: fallbackResult.keywords 
-                            });
-                        });
-                }
-            });
-            return true; // Keep message channel open for asynchronous response
-
         case 'aiDetection':
 
             chrome.storage.local.get(['apiKeyAIDetect'], (data) => {
@@ -172,6 +140,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
+
+//function to scrape page content
+function scrapePageContent(callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            function: () => {
+                // Get the main content of the page
+                const bodyText = document.body.innerText;
+                return bodyText.split('\n').filter(line => line.trim() !== ""); // Split and filter
+            }
+        }, (results) => {
+            if (chrome.runtime.lastError) {
+                console.error('Error scraping page:', chrome.runtime.lastError);
+                callback({ contentList: [], error: 'Could not scrape content.' });
+                return;
+            }
+
+            const content = (results && results[0] && results[0].result) || [];
+            console.log('Scraped Content:', content); // Log for debugging
+            contentList = content; // Store the scraped content
+
+            // Return the processed content list
+            callback({ contentList });
+        });
+    });
+}
+
 function extractSimilarChunks(note, snippet, windowSize = 5) {
     // Break the note into words
     const noteWords = note.split(/\s+/);
@@ -266,6 +262,7 @@ async function checkPlagiarism(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
 
+        // Ensure checkPlagiarism.js is injected
         ensureCheckPlagiarismScriptInjected(tabId, () => {
             chrome.tabs.sendMessage(tabId, { action: "checkPlagiarism" }, (response) => {
                 if (chrome.runtime.lastError) {
@@ -280,54 +277,3 @@ async function checkPlagiarism(callback) {
         });
     });
 }
-
-let contentList = []; 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && /^https?:/.test(tab.url)) {
-    // Inject the content script when the tab is updated and fully loaded
-    chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      files: ['popup.js']  // Inject the modified popup.js that contains scrapePageContent
-    });
-  }
-});
-
-// Function to scrape page content
->>>>>>>>> Temporary merge branch 2
-function scrapePageContent(callback) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-<<<<<<<<< Temporary merge branch 1
-            function: () => document.body.innerText
-        }, (results) => {
-            const content = (results && results[0] && results[0].result) || 'Failed to scrape content.';
-            callback({ content });
-        });
-    });
-}
-
-  
-=========
-            function: () => {
-                // Get the main content of the page
-                const bodyText = document.body.innerText;
-                return bodyText.split('\n').filter(line => line.trim() !== ""); // Split and filter
-            }
-        }, (results) => {
-            if (chrome.runtime.lastError) {
-                console.error('Error scraping page:', chrome.runtime.lastError);
-                callback({ contentList: [], error: 'Could not scrape content.' });
-                return;
-            }
-
-            const content = (results && results[0] && results[0].result) || [];
-            console.log('Scraped Content:', content); // Log for debugging
-            contentList = content; // Store the scraped content
-
-            // Return the processed content list
-            callback({ contentList });
-        });
-    });
-}
->>>>>>>>> Temporary merge branch 2
