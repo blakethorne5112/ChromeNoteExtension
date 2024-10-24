@@ -7,10 +7,6 @@ import { YoutubeTranscript, YoutubeTranscriptDisabledError,
 
 } from "./node_modules/youtube-transcript/dist/youtube-transcript.esm.js";
 
-
-/* const btn = document.getElementById("transcribe-youtube-video"); */
-
-
 // Function to sanitize transcription text
 function sanitiseText(transcription) {
     return transcription
@@ -154,13 +150,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 dropdownMenu.style.display = 'none';
             }
         });
-
-        
     }
-
-
 });
-
 
 async function transcribe(youtubeLink) {
     let lines = '';
@@ -173,8 +164,6 @@ async function transcribe(youtubeLink) {
     try {
         // First attempt with 'en'
         transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink, { lang: 'en' });
-
-        chrome.runtime.sendMessage({ done: "yes" });
         
         // If no transcript is available in 'en', try fallback languages
         if (!transcriptArr || transcriptArr.length === 0) {
@@ -278,11 +267,6 @@ async function transcribe(youtubeLink) {
 function detectYouTubeVideos() {
 
     console.log('detectYoutubeVideos function called');
-
-    /* 
-    const selectedTranscription = document.createElement("button");
-    const currentDiv = document.getElementById("videoList");
-    document.body.insertBefore(selectedTranscription, currentDiv); */
 
     chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
         var url = tabs[0].url;
@@ -393,7 +377,6 @@ function detectYouTubeVideos() {
                             }
 
                             if(i == totalVidsTraversed - 1) {
-                                /* chrome.runtime.sendMessage({ youtubeLink: youtubeLink }); */
                                 chrome.runtime.sendMessage({ youtubeLinks: youtubeLinks, titles: titles});
                                 
                             }

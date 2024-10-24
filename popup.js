@@ -28,10 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if the element exists before adding the event listener
     const saveNoteButton = document.getElementById("saveNote");
-
     const saveTranscriptButton = document.getElementById("save-transcript");
-
-    console.log("aaaaaaaaa", saveTranscriptButton);
 
     if (saveNoteButton) {
         saveNoteButton.addEventListener("click", function() {
@@ -79,8 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     displaySavedNotes();
                 });
             });
-
-            quill.root.innerHTML = ''; // Clear editor after saving
         });
     }
 
@@ -109,7 +104,6 @@ function appendTextToQuill(text) {
         console.error("Quill editor is not initialized.");
     }
 }
-
 
 // Function to display saved notes
 function displaySavedNotes() {
@@ -216,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
         function startSpeechRecognition() {
             micIcon.classList.remove("fa-microphone");
             micIcon.classList.add("fa-microphone-slash");
-            //voiceInput.focus();
             console.log("Speech Recognition Active")
         }
 
@@ -224,7 +217,6 @@ document.addEventListener("DOMContentLoaded", function () {
         function endSpeechRecognition() {
             micIcon.classList.remove("fa-microphone-slash");
             micIcon.classList.add("fa-microphone")
-            //voiceInput.focus();
             console.log("Speech Recognition Inactive")
         }
 
@@ -233,8 +225,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(event);
             const currentResultIndex = event.resultIndex;
             const transcript = event.results[currentResultIndex][0].transcript;
-            //voiceInput.value += transcript;
-
             appendTextToQuill(transcript);
         }
 

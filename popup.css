@@ -33,6 +33,15 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
+
+  transcriptButton {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+  }
   
   button#saveNote {
     background-color: #4CAF50;
