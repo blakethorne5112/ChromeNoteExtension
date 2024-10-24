@@ -26,6 +26,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             scrapePageContent(sendResponse);
             return true; // Indicates async response
 
+        case 'summarisePage':
+            chrome.storage.local.get(['apiKeySummary', 'apiUrlSummary'], (data) => {
+                // If the key exists in storage, it will log it, otherwise log a placeholder
+                if (data.apiKeySummary && data.apiUrlSummary) {
+                    console.log('Summary API Key:', data.apiKeySummary);
+                    console.log('Summary API URL:', data.apiUrlSummary);
+                    const pageContent = message.content;
+                    // Use the fallback algorithm first
+                    const fallbackResult = fallbackToAlgorithm(pageContent);
+                    // Trim the summary to 200 words before sending it to the external API
+                    const trimmedSummary = trimToWordLimit(fallbackResult.summary, 200);
+                    
+                    summariseText(trimmedSummary, data.apiKeySummary, data.apiUrlSummary)
+                        .then(data => {
+                            const apiSummary = data.result || 'No summary returned';
+                            console.log(apiSummary);
+                            sendResponse({ 
+                                summary: apiSummary, 
+                                keywords: fallbackResult.keywords 
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error fetching summary:', error);
+                            sendResponse({ 
+                                error: error.message, 
+                                keywords: fallbackResult.keywords 
+                            });
+                        });
+                }
+            });
+            return true; // Keep message channel open for asynchronous response
+
         case 'aiDetection':
 
             chrome.storage.local.get(['apiKeyAIDetect'], (data) => {
@@ -140,8 +172,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
+// Fallback algorithm for keyword extraction and summarization
+function fallbackToAlgorithm(content) {
+    const keywords = getKeywords(content);
+    const summary = summariseContent(content);
+    return { keywords, summary };
+}
 
-//function to scrape page content
+
+// Function to scrape page content
 function scrapePageContent(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.scripting.executeScript({
@@ -262,7 +301,6 @@ async function checkPlagiarism(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
 
-        // Ensure checkPlagiarism.js is injected
         ensureCheckPlagiarismScriptInjected(tabId, () => {
             chrome.tabs.sendMessage(tabId, { action: "checkPlagiarism" }, (response) => {
                 if (chrome.runtime.lastError) {
@@ -275,5 +313,115 @@ async function checkPlagiarism(callback) {
                 }
             });
         });
+    });
+}
+
+let contentList = []; 
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && /^https?:/.test(tab.url)) {
+    // Inject the content script when the tab is updated and fully loaded
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ['popup.js']  // Inject the modified popup.js that contains scrapePageContent
+    });
+  }
+});
+
+function getKeywords(text, numKeywords = 10) {
+    const sentences = text.split('. ');
+    const wordFrequency = {};
+    const documentFrequency = {};
+
+    // Calculate word frequency and document frequency
+    sentences.forEach(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        const uniqueWords = new Set(words);
+        uniqueWords.forEach(word => {
+            if (word.length > 3) {
+                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+                documentFrequency[word] = (documentFrequency[word] || 0) + 1;
+            }
+        });
+    });
+
+    const numSentences = sentences.length;
+    const keywordScores = {};
+
+    // Calculate TF-IDF scores
+    for (const word in wordFrequency) {
+        const tf = wordFrequency[word];
+        const idf = Math.log(numSentences / (documentFrequency[word] || 1));
+        keywordScores[word] = tf * idf;
+    }
+
+    // Return top keywords
+    return Object.keys(keywordScores)
+        .sort((a, b) => keywordScores[b] - keywordScores[a])
+        .slice(0, numKeywords);
+}
+
+function summariseContent(text, maxSentences = 3) {
+    const sentences = text.split('. ');
+    const wordFrequency = {};
+
+    // Calculate word frequency
+    sentences.forEach(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        words.forEach(word => {
+            if (word.length > 3) {
+                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+            }
+        });
+    });
+
+    // Score sentences based on word frequency
+    const sentenceScores = sentences.map(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        let score = 0;
+        words.forEach(word => {
+            if (wordFrequency[word]) {
+                score += wordFrequency[word];
+            }
+        });
+        return { sentence, score };
+    });
+
+    // Sort sentences by score and return the top ones
+    return sentenceScores
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxSentences)
+        .map(item => item.sentence)
+        .join('. ');
+}
+
+// Trims the summary to a maximum of 200 words
+function trimToWordLimit(text, maxWords = 200) {
+    const words = text.split(/\s+/);  // Split text by spaces
+    if (words.length > maxWords) {
+        return words.slice(0, maxWords).join(' ') + '...';  // Return first 200 words
+    }
+    return text;  // If fewer than 200 words, return the original text
+}
+
+function summariseText(summary, apiKey, apiUrl) {
+
+    console.log(summary);
+
+    const requestBody = {
+        key: apiKey,
+        text: summary
+    };
+
+    return fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
     });
 }
