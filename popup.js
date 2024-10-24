@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if the element exists before adding the event listener
     const saveNoteButton = document.getElementById("saveNote");
+    const saveTranscriptButton = document.getElementById("save-transcript");
     
     if (saveNoteButton) {
         saveNoteButton.addEventListener("click", function() {
@@ -45,6 +46,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 chrome.storage.local.set({userNotes: notes}, function() {
                     console.log("Note saved!");
+                    displaySavedNotes();
+                });
+            });
+
+            quill.root.innerHTML = ''; // Clear editor after saving
+        });
+    }
+    
+    if(saveTranscriptButton) {
+        saveTranscriptButton.addEventListener("click", function() {
+            const transcription = document.getElementById("output");
+            const note = transcription.innerHTML;
+
+            chrome.storage.local.get({userNotes: []}, function(result) {
+                const notes = result.userNotes;
+
+                if (editingIndex >= 0) {
+                    notes[editingIndex] = note;
+                    editingIndex = -1;
+                } else {
+                    notes.push(note);
+                }
+
+                chrome.storage.local.set({userNotes: notes}, function() {
+                    console.log("Transcript saved!");
                     displaySavedNotes();
                 });
             });

@@ -54,10 +54,18 @@
 
   </div>
 
+  <div id = "transcriber-section">
+    <h3>YouTube Transcriber</h3>
+    <textarea id = "output" placeholder="Transcript will be here....." readonly></textarea>
+    <ul id="videoList"></ul>
+    <!-- <button id = "transcribe-youtube-video" type = "button"><i class="fa fa-youtube-play"></i> Transcribe YouTube Video</button> -->
+    <button id = "save-transcript">Save Transcript</button>
+    <button id="copy-transcription" type="button"><i class="fa-solid fa-copy"></i></button>
+  </div>
   
 
-  <script src="transcriber.js" type="module"></script>
-
+  <script src = "transcriber.js" type="module"></script>
   <script src="popup.js"></script>
+
 </body>
 </html>
