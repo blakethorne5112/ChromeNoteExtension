@@ -305,27 +305,6 @@ function detectYouTubeVideos() {
         }
 
         else {
-
-                /* const transcriberOptions = document.createElement("button");
-                const buttonContent = document.createTextNode(` Transcribe Videos`);
-                
-                const icon = document.createElement("icon");
-                icon.className="fa fa-youtube-play"
-
-                transcriberOptions.id = `selectableButton`;
-                transcriberOptions.style.backgroundColor = 'red';
-                transcriberOptions.style.color = 'white';
-                
-                transcriberOptions.appendChild(icon);
-                transcriberOptions.appendChild(buttonContent);
-
-                // Insert the button into the DOM
-                const currentDiv = document.getElementById("videoList");
-                document.body.insertBefore(transcriberOptions, currentDiv);
-
-
-                transcriberOptions.addEventListener("click", () => {console.log("SLJFSKlks")}); */
-
             chrome.scripting.executeScript({
                 target: { tabId: tabs[0].id },
                 
