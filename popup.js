@@ -6,6 +6,11 @@ let countdownTime = delayTime / 1000; // Countdown time in seconds
 
 var quill; 
 
+// Summary Variables
+var summariseButton;
+var timerMessage; 
+var summaryDiv; 
+
 // Function to save or update a note
 document.addEventListener('DOMContentLoaded', () => {
     quill = new Quill('#editor-container', {
@@ -273,9 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Event listener for summarising page
-    const summariseButton = document.getElementById('summariseButton');
-    const timerMessage = document.getElementById('timerMessage');
-    const summaryDiv = document.getElementById('summary');
+    summariseButton = document.getElementById('summariseButton');
+    timerMessage = document.getElementById('timerMessage');
+    summaryDiv = document.getElementById('summary');
     if (summariseButton) {
         summariseButton.addEventListener('click', debounce(() => {
             if (isSummarising || isRequestInProgress) {
@@ -357,7 +362,7 @@ function handleTab(tab) {
             const pageContent = results[0].result; // Retrieved content from active tab
 
             // Send the page content to the background script for summarization
-            chrome.runtime.sendMessage({ action: "summarizePage", content: pageContent }, (response) => {
+            chrome.runtime.sendMessage({ action: "summarisePage", content: pageContent }, (response) => {
                 isSummarizing = false; // Reset summarizing flag
                 isRequestInProgress = false; // Reset request flag
 
