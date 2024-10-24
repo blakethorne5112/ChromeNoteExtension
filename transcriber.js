@@ -8,7 +8,7 @@ import { YoutubeTranscript, YoutubeTranscriptDisabledError,
 } from "./node_modules/youtube-transcript/dist/youtube-transcript.esm.js";
 
 
-const btn = document.getElementById("transcribe-youtube-video");
+/* const btn = document.getElementById("transcribe-youtube-video"); */
 
 
 // Function to sanitize transcription text
@@ -113,7 +113,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         dropdownMenu.style.minWidth = '160px';
 
         // Insert the button into the DOM
-        const currentDiv = document.getElementById("videoList");
+        const currentDiv = document.getElementById("transcriber-section.videoList");
         document.body.insertBefore(transcriberOptions, currentDiv);
         document.body.insertBefore(dropdownMenu, currentDiv);
 
@@ -174,6 +174,8 @@ async function transcribe(youtubeLink) {
         // First attempt with 'en'
         transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink, { lang: 'en' });
 
+        chrome.runtime.sendMessage({ done: "yes" });
+        
         // If no transcript is available in 'en', try fallback languages
         if (!transcriptArr || transcriptArr.length === 0) {
             console.log("Transcript in 'en' not found. Trying fallback languages...");
@@ -304,7 +306,7 @@ function detectYouTubeVideos() {
             selectedTranscription.appendChild(buttonContent);
 
             // Insert the button into the DOM
-            const currentDiv = document.getElementById("videoList");
+            const currentDiv = document.getElementById("transcriber-section.videoList");
             document.body.insertBefore(selectedTranscription, currentDiv);
 
             selectedTranscription.addEventListener("click", async () => {

@@ -18,7 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if the element exists before adding the event listener
     const saveNoteButton = document.getElementById("saveNote");
-    
+
+    const saveTranscriptButton = document.getElementById("save-transcript");
+
+    console.log("aaaaaaaaa", saveTranscriptButton);
+
     if (saveNoteButton) {
         saveNoteButton.addEventListener("click", function() {
             const note = quill.root.innerHTML;
@@ -41,7 +45,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
             quill.root.innerHTML = ''; // Clear editor after saving
         });
-    } else {
+    } 
+
+    if(saveTranscriptButton) {
+        console.log("saveTranscriptButton");
+        saveTranscriptButton.addEventListener("click", function() {
+            const transcriptionText = document.getElementById("output");
+            appendTextToQuill(transcriptionText.innerHTML);
+            const note = quill.root.innerHTML;
+
+            chrome.storage.local.get({userNotes: []}, function(result) {
+                const notes = result.userNotes;
+
+                if (editingIndex >= 0) {
+                    notes[editingIndex] = note;
+                    editingIndex = -1;
+                } else {
+                    notes.push(note);
+                }
+
+                chrome.storage.local.set({userNotes: notes}, function() {
+                    console.log("Note saved!");
+                    displaySavedNotes();
+                });
+            });
+
+            quill.root.innerHTML = ''; // Clear editor after saving
+        });
+    }
+
+    else {
         console.error("Save Note button not found!");
     }
 
@@ -141,14 +174,10 @@ document.addEventListener('DOMContentLoaded', displaySavedNotes);
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const voiceInput = document.getElementById("note");
-
     const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (speechRecognition) {
         console.log("Your Browser supports speech Recognition");
-
-
 
         const micBtn = document.getElementById("microphone-button");
         const micIcon = micBtn.querySelector("i");
@@ -177,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function () {
         function startSpeechRecognition() {
             micIcon.classList.remove("fa-microphone");
             micIcon.classList.add("fa-microphone-slash");
-            voiceInput.focus();
+            //voiceInput.focus();
             console.log("Speech Recognition Active")
         }
 
@@ -185,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
         function endSpeechRecognition() {
             micIcon.classList.remove("fa-microphone-slash");
             micIcon.classList.add("fa-microphone")
-            voiceInput.focus();
+            //voiceInput.focus();
             console.log("Speech Recognition Inactive")
         }
 
@@ -194,7 +223,9 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(event);
             const currentResultIndex = event.resultIndex;
             const transcript = event.results[currentResultIndex][0].transcript;
-            voiceInput.value += transcript;
+            //voiceInput.value += transcript;
+
+            appendTextToQuill(transcript);
         }
 
         recognition.addEventListener("error", (event) => {

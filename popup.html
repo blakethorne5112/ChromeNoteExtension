@@ -23,7 +23,9 @@
         <button id="checkPlagiarism">Check Note for Plagiarism</button>
         <button id="detectBtn">Check for AI Content</button>
       </div>
-      <div id="aiResult"></div>
+      
+      <button id = "microphone-button" type="button"><i class="fas fa-microphone"></i></button>
+       <div id="aiResult"></div>
 
       <div id="citationSection">
         <h3>Citation Generator</h3>
@@ -40,13 +42,6 @@
       <div id="plagiarism-section">
         <div id="plagiarismResult" class="plagiarismResult"></div>
       </div>
-
-      <button id = "microphone-button" type="button"><i class="fas fa-microphone"></i></button>
-        <textarea id = "output" placeholder="Transcript will be here....." readonly></textarea>
-        <ul id="videoList"></ul>
-        <!-- <button id = "transcribe-youtube-video" type = "button"><i class="fa fa-youtube-play"></i> Transcribe YouTube Video</button> -->
-        <button id = "save-transcript">Save Transcript</button>
-        <button id="copy-transcription" type="button"><i class="fa-solid fa-copy"></i></button>
         
         <div id="savedNotes">
         <h3>Saved Notes:</h3>
@@ -55,6 +50,18 @@
       </div>
 
     </div>
+
+    
+
+    <div id = "transcriber-section">
+      <h3>YouTube Transcriber</h3>
+      <textarea id = "output" placeholder="Transcript will be here....." readonly></textarea>
+      <ul id="videoList"></ul>
+      <!-- <button id = "transcribe-youtube-video" type = "button"><i class="fa fa-youtube-play"></i> Transcribe YouTube Video</button> -->
+      <button id = "save-transcript">Save Transcript</button>
+      <button id="copy-transcription" type="button"><i class="fa-solid fa-copy"></i></button>
+    </div>
+    
 
     <script src = "transcriber.js" type="module"></script>
     <script src="popup.js"></script>
