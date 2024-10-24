@@ -1,5 +1,3 @@
-require('dotenv').config();  // Add this line to load .env file
-
 // Listener for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "summarizePage") {
@@ -113,8 +111,7 @@ function trimToWordLimit(text, maxWords = 200) {
 }
 
 function summarizeText(summary) {
-    const apiKey = 'L8EYWD9I2N260L6NSB4M7ZK4UXP6269L';  
-    const apiUrl = 'https://api.sapling.ai/api/v1/summarize'; 
+
 
     console.log(summary);
 
