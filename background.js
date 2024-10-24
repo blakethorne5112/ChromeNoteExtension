@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 if (data.apiKeySummary && data.apiUrlSummary) {
                     console.log('Summary API Key:', data.apiKeySummary);
                     console.log('Summary API URL:', data.apiUrlSummary);
-                    const pageContent = request.content;
+                    const pageContent = message.content;
                     // Use the fallback algorithm first
                     const fallbackResult = fallbackToAlgorithm(pageContent);
                     // Trim the summary to 200 words before sending it to the external API
