@@ -10,16 +10,6 @@ function ensureContentScriptInjected(tabId, callback) {
     });
 }
 
-// Function to ensure checkplagiarism script is injected
-function ensureCheckPlagiarismScriptInjected(tabId, callback) {
-    chrome.scripting.executeScript({
-        target: { tabId: tabId },
-        files: ['checkplagiarism.js'] 
-    }, () => {
-        if (callback) callback();
-    });
-}
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case 'scrapePage':
@@ -203,7 +193,6 @@ async function checkPlagiarism(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
 
-        // Ensure checkPlagiarism.js is injected
         ensureCheckPlagiarismScriptInjected(tabId, () => {
             chrome.tabs.sendMessage(tabId, { action: "checkPlagiarism" }, (response) => {
                 if (chrome.runtime.lastError) {
