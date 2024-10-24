@@ -1,13 +1,17 @@
 {
-  "manifest_version": 3,
-  "name": "Web Page Summarize",
+  "name": "Note Taking Web Summarizer",
   "version": "1.0",
-  "description": "Summarize active tab with external LLM.",
+  "manifest_version": 3,
+  "description": "A tool for taking efficient notes from web pages",
   "permissions": [
+    "storage",
     "activeTab",
     "scripting",
-    "storage"
+    "tabs"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -21,7 +25,13 @@
     "48": "images/icon48.png",
     "128": "images/icon128.png"
   },
-  "background": {
-    "service_worker": "background.js"
-  }
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["popup.js", "content.js"]
+    }
+  ],
+  "host_permissions": [
+    "*://*/*", "<all_urls>"
+  ]
 }

@@ -1,21 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="popup.css">
-    <title>Summarize Page</title>
-    <link rel="stylesheet" href="popup.css">
-    <title>Summarize Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note Taking & Citation App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="popup.css">
+
+  <!-- Load Quill CSS locally -->
+  <link rel="stylesheet" type="text/css" href="libs/quill/quill.snow.css">
+
+  <!-- Load Quill JS locally -->
+  <script src="libs/quill/quill.js"></script>
+
+
 </head>
 <body>
+  <div id="app-container">
+    <div id="note-section">
+      <h3>Notes</h3>
+      <div id="editor-container" style="height: 150px;"></div>
+      <button id="saveNote">Save Note</button>
+      <button id="checkPlagiarism">Check Note for Plagiarism</button>
+      <button id="detectBtn">Check for AI Content</button>
+    </div>
+    <div id="ai-section">
+      <div id="aiResult"></div>
+    </div>
+    <div id="summary-section">
+      <button id="summariseButton">Summarise</button>
+      <h2>Summary</h2>
+      <div id="timerMessage"></div>
+      <div id="summary">Summary will appear here...</div>
+    </div>
+    <div id="plagiarism-section">
+      <div id="plagiarismResult" class="plagiarismResult"></div>
+    </div>
+    <div id="citationSection">
+      <h3>Citation Generator</h3>
+      <select id="citationStyle">
+          <option value="APA7">APA7</option>
+          <option value="Harvard">Harvard</option>
+          <option value="MLA">MLA</option>
+          <option value="Chicago">Chicago</option>
+      </select>
+      <button id="generateCitation">Generate Citation</button>
+      <div id="citationResult"></div>
+  </div>
+    <div id="savedNotes">
+      <h3>Saved Notes:</h3>
+      <input type="text" id="searchBar" placeholder="Search notes...">
+      <div id="notesList"></div>
+    </div>
 
+  </div>
 
-    <button id="summarizeButton">Summarize</button>
-    <h2>Summary</h2>
-    <div id="timerMessage"></div>
-    <div id="summary">Summary will appear here...</div>
-
-    <script src="popup.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>
