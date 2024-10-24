@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if the element exists before adding the event listener
     const saveNoteButton = document.getElementById("saveNote");
-    
+    const saveTranscriptButton = document.getElementById("save-transcript");
+
     if (saveNoteButton) {
         saveNoteButton.addEventListener("click", function() {
             const note = quill.root.innerHTML;
@@ -51,7 +52,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
             quill.root.innerHTML = ''; // Clear editor after saving
         });
-    } else {
+    } 
+
+    if(saveTranscriptButton) {
+        console.log("saveTranscriptButton");
+        saveTranscriptButton.addEventListener("click", function() {
+            const transcriptionText = document.getElementById("output");
+            appendTextToQuill(transcriptionText.innerHTML);
+            const note = quill.root.innerHTML;
+
+            chrome.storage.local.get({userNotes: []}, function(result) {
+                const notes = result.userNotes;
+
+                if (editingIndex >= 0) {
+                    notes[editingIndex] = note;
+                    editingIndex = -1;
+                } else {
+                    notes.push(note);
+                }
+
+                chrome.storage.local.set({userNotes: notes}, function() {
+                    console.log("Note saved!");
+                    displaySavedNotes();
+                });
+            });
+        });
+    }
+
+    else {
         console.error("Save Note button not found!");
     }
 
@@ -76,7 +104,6 @@ function appendTextToQuill(text) {
         console.error("Quill editor is not initialized.");
     }
 }
-
 
 // Function to display saved notes
 function displaySavedNotes() {
@@ -137,6 +164,99 @@ function deleteNote(index) {
         });
     });
 }
+
+// Initialize the popup
+document.addEventListener('DOMContentLoaded', () => {
+    displaySavedNotes(); // function needs to be defined for displaying saved notes
+    scrapePageContent(); // Add this to pre-fill the note input with page content
+});
+
+
+// Display saved notes when the popup opens
+document.addEventListener('DOMContentLoaded', displaySavedNotes);
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (speechRecognition) {
+        console.log("Your Browser supports speech Recognition");
+
+        const micBtn = document.getElementById("microphone-button");
+        const micIcon = micBtn.querySelector("i");
+
+        const recognition = new speechRecognition();
+        recognition.continuous = true;
+
+        micBtn.addEventListener("click", micBtnClick);
+        function micBtnClick() {
+            if (micIcon.classList.contains("fa-microphone")) {
+                // Start Speech Recognition
+
+                recognition.start();
+            }
+
+            else {
+                // Stop speech recongition
+                recognition.stop();
+
+                console.log(recognition);
+
+            }
+        }
+
+        recognition.addEventListener("start", startSpeechRecognition);
+        function startSpeechRecognition() {
+            micIcon.classList.remove("fa-microphone");
+            micIcon.classList.add("fa-microphone-slash");
+            console.log("Speech Recognition Active")
+        }
+
+        recognition.addEventListener("end", endSpeechRecognition);
+        function endSpeechRecognition() {
+            micIcon.classList.remove("fa-microphone-slash");
+            micIcon.classList.add("fa-microphone")
+            console.log("Speech Recognition Inactive")
+        }
+
+        recognition.addEventListener("result", resultOfSpeechRecognition);
+        function resultOfSpeechRecognition(event) {
+            console.log(event);
+            const currentResultIndex = event.resultIndex;
+            const transcript = event.results[currentResultIndex][0].transcript;
+            appendTextToQuill(transcript);
+        }
+
+        recognition.addEventListener("error", (event) => {
+            console.log("Speech recognition error: ", event.error);
+        });
+    }
+
+    else {
+        console.log("Your Browser does not support speech Recognition");
+    }
+
+})
+
+
+document.getElementById('copy-transcription').addEventListener('click', function () {
+    // Get the output textarea element
+    const outputTextarea = document.getElementById('output');
+
+    // Select the text inside the textarea
+    outputTextarea.select();
+    outputTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+    // Copy the selected text to the clipboard
+    document.execCommand('copy');
+
+    // Optional: Alert the user that text was copied
+    alert('Transcription copied to clipboard!');
+});
+
+
+
 // Function to scrape the text content of the current page from specific elements
 function scrapePageContent() {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {

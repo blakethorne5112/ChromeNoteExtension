@@ -161,9 +161,9 @@ body {
 
 /* Note Item Stuff */
   
-  .noteItem:hover {
-    background-color: #f0f0f0;
-  }
+.noteItem:hover {
+  background-color: #f0f0f0;
+}
   
   /* Icon button styling */
   .icon-button {
@@ -192,6 +192,16 @@ body {
     color: #4CAF50;
   }
 
+
+  p {
+    font-size: medium;
+  }
+
+  #voice-text {
+    width: 90%;
+    height: 70px;
+  }
+
   #searchBar {
     width: 90%;
     padding: 10px;
@@ -199,6 +209,74 @@ body {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 14px;
+    resize: none;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+  }
+
+  #output {
+    width: 90%;
+    height: 50px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: none;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);  
+    background-color: #fff;
+  }
+
+
+  #transcribe-youtube-video {
+    padding: 10px;
+    border: none;
+    background-color: red;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+#selectableButton {
+    padding: 10px;
+    border: none;
+    background-color: rgb(255, 0, 0);
+    color: white;
+    border-radius: 5px;
+
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#microphone-button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#copy-transcription {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#save-transcript {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+button#tran {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: #fff;
 }

@@ -25,16 +25,20 @@
       <button id="detectBtn">Check for AI Content</button>
       <button id="summariseButton">Summarise Page</button>
     </div>
+    <!-- <button id = "microphone-button" type="button"><i class="fas fa-microphone"></i></button> -->
     <div id="ai-section">
       <div id="aiResult"></div>
     </div>
+
     <div id="summary-section">
       <div id="timerMessage"></div>
       <div id="summary"></div>
     </div>
+
     <div id="plagiarism-section">
       <div id="plagiarismResult" class="plagiarismResult"></div>
     </div>
+
     <div id="citationSection">
       <h3>Citation Generator</h3>
       <select id="citationStyle">
@@ -45,15 +49,23 @@
       </select>
       <button id="generateCitation">Generate Citation</button>
       <div id="citationResult"></div>
-  </div>
+    </div>
+
     <div id="savedNotes">
       <h3>Saved Notes:</h3>
       <input type="text" id="searchBar" placeholder="Search notes...">
       <div id="notesList"></div>
     </div>
 
-  </div>
+    <div id = "transcriber-section">
+      <h3>YouTube Transcriber</h3>
+      <textarea id = "output" placeholder="Transcript will be here....." readonly></textarea>
+      <ul id="videoList"></ul>
+      <button id = "save-transcript">Save Transcript</button>
+      <button id="copy-transcription" type="button"><i class="fa-solid fa-copy"></i></button>
+    </div>
 
-  <script src="popup.js"></script>
-</body>
+    <script src ="transcriber.js" type="module"></script>
+    <script src="popup.js"></script>
+  </body>
 </html>

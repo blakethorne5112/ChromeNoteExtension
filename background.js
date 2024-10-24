@@ -256,6 +256,7 @@ async function checkPlagiarism(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
 
+        // Ensure checkPlagiarism.js is injected
         ensureCheckPlagiarismScriptInjected(tabId, () => {
             chrome.tabs.sendMessage(tabId, { action: "checkPlagiarism" }, (response) => {
                 if (chrome.runtime.lastError) {
@@ -271,7 +272,6 @@ async function checkPlagiarism(callback) {
     });
 }
 
-
 let contentList = []; 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && /^https?:/.test(tab.url)) {
@@ -283,7 +283,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// Function to scrape page content
+//function to scrape page content
 function scrapePageContent(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.scripting.executeScript({
