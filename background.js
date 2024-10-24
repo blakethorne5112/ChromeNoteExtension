@@ -16,6 +16,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             scrapePageContent(sendResponse);
             return true; // Indicates async response
 
+        case 'aiDetection':
+
+            chrome.storage.local.get(['apiKeyAIDetect'], (data) => {
+                // If the key exists in storage, it will log it, otherwise log a placeholder
+                if (data.apiKeyAIDetect) {
+                    const apiKeyAIDetect = data.apiKeyAIDetect;
+                    try {
+                        (async () => {
+                            const response = await fetch('https://api.sapling.ai/api/v1/aidetect', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    key: apiKeyAIDetect,
+                                    text: message.text.toString()
+                                })
+                            });
+
+                            const result = await response.json();
+                            sendResponse({ result: result });
+                        })();
+                    } catch (error) {
+                        console.error('Error:', error);
+                        sendResponse({ error: 'Failed to detect AI content' });
+                    }
+                }
+
+            });
+            return true;
+
         case 'getScrapedContent':
             sendResponse({ contentList });
             return true;
