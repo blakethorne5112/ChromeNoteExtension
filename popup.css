@@ -233,7 +233,7 @@ body {
   font-size: 13px;
 }
 
-#summarizeButton {
+#summariseButton {
   width: 100%;
   background-color: #10b449;
   color: white;
@@ -247,12 +247,12 @@ body {
   margin-bottom: 10px;
 }
 
-#summarizeButton:hover {
+#summariseButton:hover {
   background-color: #087f3b; 
   transform: translateY(-2px);
 }
 
-#summarizeButton:focus {
+#summariseButton:focus {
   outline: none;
 }
   

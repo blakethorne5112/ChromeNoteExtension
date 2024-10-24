@@ -367,7 +367,7 @@ function handleTab(tab) {
                 isRequestInProgress = false; // Reset request flag
 
                 if (response && response.summary) {
-                    summaryDiv.textContent = response.summary || "Error: Unable to summarize the page.";
+                    summaryDiv.textContent = response.summary || "Error: Unable to summarise the page.";
                 } else {
                     summaryDiv.textContent = "Error: No summary received.";
                 }
@@ -407,7 +407,7 @@ function startCountdown() {
 function resetState() {
     isSummarizing = false; // Reset flag
     isRequestInProgress = false; // Reset request flag
-    summarizeButton.disabled = false; // Re-enable the button
+    summariseButton.disabled = false; // Re-enable the button
 }
 
 // Debounce function to limit rapid function calls

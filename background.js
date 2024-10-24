@@ -28,7 +28,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     // Trim the summary to 200 words before sending it to the external API
                     const trimmedSummary = trimToWordLimit(fallbackResult.summary, 200);
                     
-                    summarizeText(trimmedSummary, data.apiKeySummary, data.apiUrlSummary)
+                    summariseText(trimmedSummary, data.apiKeySummary, data.apiUrlSummary)
                         .then(data => {
                             const apiSummary = data.result || 'No summary returned';
                             console.log(apiSummary);
@@ -313,7 +313,7 @@ function scrapePageContent(callback) {
 // Fallback algorithm for keyword extraction and summarization
 function fallbackToAlgorithm(content) {
     const keywords = getKeywords(content);
-    const summary = summarizeContent(content);
+    const summary = summariseContent(content);
     return { keywords, summary };
 }
 
@@ -350,7 +350,7 @@ function getKeywords(text, numKeywords = 10) {
         .slice(0, numKeywords);
 }
 
-function summarizeContent(text, maxSentences = 3) {
+function summariseContent(text, maxSentences = 3) {
     const sentences = text.split('. ');
     const wordFrequency = {};
 
@@ -393,7 +393,7 @@ function trimToWordLimit(text, maxWords = 200) {
     return text;  // If fewer than 200 words, return the original text
 }
 
-function summarizeText(summary, apiKey, apiUrl) {
+function summariseText(summary, apiKey, apiUrl) {
 
     console.log(summary);
 
