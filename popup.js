@@ -1,5 +1,5 @@
 editingIndex = -1; // This will track if the user is editing an existing note
-let isSummarizing = false; // Flag to prevent multiple clicks
+let isSummarising = false; // Flag to prevent multiple clicks
 let isRequestInProgress = false; // Flag to check if a request is in progress
 const delayTime = 3000; // Delay time in milliseconds for debounce
 let countdownTime = delayTime / 1000; // Countdown time in seconds
@@ -277,27 +277,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerMessage = document.getElementById('timerMessage');
     const summaryDiv = document.getElementById('summary');
     if (summariseButton) {
-	summarizeButton.addEventListener('click', debounce(() => {
+        summariseButton.addEventListener('click', debounce(() => {
             if (isSummarising || isRequestInProgress) {
-        	timerMessage.textContent = `Please wait ${countdownTime} seconds before trying again.`;
-        	return;
-    	    }
+                timerMessage.textContent = `Please wait ${countdownTime} seconds before trying again.`;
+                return;
+            }
+            isSummarising = true; // Set flag to prevent multiple clicks
+            isRequestInProgress = true; // Set flag to indicate a request is in progress
+            summariseButton.disabled = true; // Disable the button during the process
+            timerMessage.textContent = ""; // Clear previous messages
 
-    isSummarizing = true; // Set flag to prevent multiple clicks
-    isRequestInProgress = true; // Set flag to indicate a request is in progress
-    summarizeButton.disabled = true; // Disable the button during the process
-    timerMessage.textContent = ""; // Clear previous messages
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+                if (chrome.runtime.lastError || tabs.length === 0) {
+                    summaryDiv.textContent = "No active tab found. Please open a textual web page.";
+                    resetState();
+                    return;
+                }
 
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-        if (chrome.runtime.lastError || tabs.length === 0) {
-            summaryDiv.textContent = "No active tab found. Please open a textual web page.";
-            resetState();
-            return;
-        }
+                handleTab(tabs[0]);
+            });
+        }, 1000));
+    }
 
-        handleTab(tabs[0]);
-    });
-}, 1000));
+    // Event listener for plagiarism check
+    const plagiarismButton = document.getElementById("checkPlagiarism");
+    if (plagiarismButton) {
+        plagiarismButton.addEventListener("click", function() {
+            const note = quill.root.textContent;
+
+            document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
+            chrome.runtime.sendMessage({ 
+                action: 'checkPlagiarism',
+                note: note
+             }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Error generating plagiarism result:", chrome.runtime.lastError.message);
+                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                } else if (response && response.plagiarism) {
+                    let plagiarisedText = "";
+                    plagiarisedText = response.plagiarism;
+                    if(plagiarisedText == ""){
+                        plagiarisedText = "No plagiarism found.";
+                    }
+                    document.getElementById("plagiarismResult").innerHTML = plagiarisedText;
+                } else if (response.error && response.error == 'You must be writing or editing a note to check plagiarism!') {
+                    document.getElementById("plagiarismResult").textContent = response.error;
+                } 
+                else {
+                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                }
+            });
+        });
+    }
+
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.addEventListener('input', filterNotes);
+    }
+
+    displaySavedNotes();
+});
+
 function handleTab(tab) {
     summaryDiv.textContent = "Processing...";
 
@@ -373,49 +413,6 @@ function debounce(func, delay) {
         timer = setTimeout(() => func.apply(this, args), delay);
     };
 }
-
-
-    // Event listener for plagiarism check
-    const plagiarismButton = document.getElementById("checkPlagiarism");
-    if (plagiarismButton) {
-        plagiarismButton.addEventListener("click", function() {
-            const note = quill.root.textContent;
-
-            document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
-            chrome.runtime.sendMessage({ 
-                action: 'checkPlagiarism',
-                note: note
-             }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error generating plagiarism result:", chrome.runtime.lastError.message);
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
-                } else if (response && response.plagiarism) {
-                    let plagiarisedText = "";
-                    plagiarisedText = response.plagiarism;
-                    if(plagiarisedText == ""){
-                        plagiarisedText = "No plagiarism found.";
-                    }
-                    document.getElementById("plagiarismResult").innerHTML = plagiarisedText;
-                } else if (response.error && response.error == 'You must be writing or editing a note to check plagiarism!') {
-                    document.getElementById("plagiarismResult").textContent = response.error;
-                } 
-                else {
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
-                }
-            });
-        });
-    }
-
-    // Event listener for summarising page
-
-
-    const searchBar = document.getElementById('searchBar');
-    if (searchBar) {
-        searchBar.addEventListener('input', filterNotes);
-    }
-
-    displaySavedNotes();
-});
 
 // Function to display filtered notes based on search input
 function filterNotes() {
