@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Function to append text to the Quill editor
+function appendTextToQuill(text) {
+    if (quill) {
+        var currentLength = quill.getLength();  // Get current content length
+        quill.insertText(currentLength, text);  // Append text at the end
+    } else {
+        console.error("Quill editor is not initialized.");
+    }
+}
+
 
 // Function to display saved notes
 function displaySavedNotes() {
@@ -360,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const plagiarismButton = document.getElementById("checkPlagiarism");
     if (plagiarismButton) {
         plagiarismButton.addEventListener("click", function() {
-            const note = quill.root.innerHTML;
+            const note = quill.root.textContent;
 
             document.getElementById("plagiarismResult").textContent = "Running Plagiarism Check...";
             chrome.runtime.sendMessage({ 
