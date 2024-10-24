@@ -1,5 +1,15 @@
 editingIndex = -1; // This will track if the user is editing an existing note
+let isSummarising = false; // Flag to prevent multiple clicks
+let isRequestInProgress = false; // Flag to check if a request is in progress
+const delayTime = 3000; // Delay time in milliseconds for debounce
+let countdownTime = delayTime / 1000; // Countdown time in seconds
+
 var quill; 
+
+// Summary Variables
+var summariseButton;
+var timerMessage; 
+var summaryDiv; 
 
 // Function to save or update a note
 document.addEventListener('DOMContentLoaded', () => {
@@ -267,6 +277,33 @@ document.addEventListener('DOMContentLoaded', () => {
         
     });
 
+    // Event listener for summarising page
+    summariseButton = document.getElementById('summariseButton');
+    timerMessage = document.getElementById('timerMessage');
+    summaryDiv = document.getElementById('summary');
+    if (summariseButton) {
+        summariseButton.addEventListener('click', debounce(() => {
+            if (isSummarising || isRequestInProgress) {
+                timerMessage.textContent = `Please wait ${countdownTime} seconds before trying again.`;
+                return;
+            }
+            isSummarising = true; // Set flag to prevent multiple clicks
+            isRequestInProgress = true; // Set flag to indicate a request is in progress
+            summariseButton.disabled = true; // Disable the button during the process
+            timerMessage.textContent = ""; // Clear previous messages
+
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+                if (chrome.runtime.lastError || tabs.length === 0) {
+                    summaryDiv.textContent = "No active tab found. Please open a textual web page.";
+                    resetState();
+                    return;
+                }
+
+                handleTab(tabs[0]);
+            });
+        }, 1000));
+    }
+
     // Event listener for plagiarism check
     const plagiarismButton = document.getElementById("checkPlagiarism");
     if (plagiarismButton) {
@@ -305,6 +342,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     displaySavedNotes();
 });
+
+function handleTab(tab) {
+    summaryDiv.textContent = "Processing...";
+
+    chrome.scripting.executeScript(
+        {
+            target: { tabId: tab.id },
+            function: getPageContent // Use a separate function for clarity
+        },
+        (results) => {
+            if (chrome.runtime.lastError || !results || results.length === 0) {
+                console.error(chrome.runtime.lastError);
+                summaryDiv.textContent = "Error: Unable to retrieve page content.";
+                resetState();
+                return;
+            }
+
+            const pageContent = results[0].result; // Retrieved content from active tab
+
+            // Send the page content to the background script for summarization
+            chrome.runtime.sendMessage({ action: "summarisePage", content: pageContent }, (response) => {
+                isSummarizing = false; // Reset summarizing flag
+                isRequestInProgress = false; // Reset request flag
+
+                if (response && response.summary) {
+                    summaryDiv.textContent = response.summary || "Error: Unable to summarise the page.";
+                } else {
+                    summaryDiv.textContent = "Error: No summary received.";
+                }
+            });
+        }
+    );
+
+    startCountdown(); // Start countdown immediately after requesting content
+}
+
+// Function to get the page content
+function getPageContent() {
+    let content = "";
+    document.querySelectorAll('p, h1, h2, h3, h4, h5, h6').forEach(el => {
+        content += el.innerText + " "; 
+    });
+    return content.trim(); // Return trimmed content
+}
+
+// Countdown timer function
+function startCountdown() {
+    let timeLeft = countdownTime;
+    timerMessage.textContent = `Please wait ${timeLeft} seconds before trying again.`; 
+
+    const interval = setInterval(() => {
+        timeLeft -= 1;
+        timerMessage.textContent = `Please wait ${timeLeft} seconds before trying again.`; 
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            resetState(); 
+            timerMessage.textContent = ""; 
+        }
+    }, 1000); // Update every second
+}
+
+function resetState() {
+    isSummarizing = false; // Reset flag
+    isRequestInProgress = false; // Reset request flag
+    summariseButton.disabled = false; // Re-enable the button
+}
+
+// Debounce function to limit rapid function calls
+function debounce(func, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
 // Function to display filtered notes based on search input
 function filterNotes() {
