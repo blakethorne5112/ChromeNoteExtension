@@ -24,9 +24,6 @@ body {
   
   /* Button styling */
   button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
     padding: 10px;
     margin-top: 10px;
     margin-right: 10px;
@@ -70,6 +67,15 @@ body {
   }
   
   button#detectBtn:hover {
+    background-color: #45a049;
+  }
+
+  button#summariseButton {
+    background-color: #4CAF50;
+    color: white;
+  }
+
+  button#summariseButton:hover {
     background-color: #45a049;
   }
 
@@ -154,13 +160,11 @@ body {
 }
 
 /* Note Item Stuff */
-
   
-  .noteItem:hover {
-    background-color: #f0f0f0;
-  }
+.noteItem:hover {
+  background-color: #f0f0f0;
+}
   
-
   /* Icon button styling */
   .icon-button {
     border: none;
@@ -284,5 +288,37 @@ button#tran {
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Green glow to match buttons */
 }
 
+#summary {
+  background-color: #f9f9fb;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #333;
+  overflow-y: auto;
+  height: auto; /* Automatically adjust height */
+  min-height: 0; /* Minimum height when empty */
+  display: none; /* Hide the element by default */
+}
 
+#summary:not(:empty) {
+  display: block; /* Show the element if it's not empty */
+  height: 150px; /* Set height when content is present */
+}
+
+#timerMessage {
+  color: red;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+#summariseButton:hover {
+  background-color: #087f3b; 
+  transform: translateY(-2px);
+}
+
+#summariseButton:focus {
+  outline: none;
+}
   

@@ -172,41 +172,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// Fallback algorithm for keyword extraction and summarization
-function fallbackToAlgorithm(content) {
-    const keywords = getKeywords(content);
-    const summary = summariseContent(content);
-    return { keywords, summary };
-}
-
-
-// Function to scrape page content
-function scrapePageContent(callback) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            function: () => {
-                // Get the main content of the page
-                const bodyText = document.body.innerText;
-                return bodyText.split('\n').filter(line => line.trim() !== ""); // Split and filter
-            }
-        }, (results) => {
-            if (chrome.runtime.lastError) {
-                console.error('Error scraping page:', chrome.runtime.lastError);
-                callback({ contentList: [], error: 'Could not scrape content.' });
-                return;
-            }
-
-            const content = (results && results[0] && results[0].result) || [];
-            console.log('Scraped Content:', content); // Log for debugging
-            contentList = content; // Store the scraped content
-
-            // Return the processed content list
-            callback({ contentList });
-        });
-    });
-}
-
 function extractSimilarChunks(note, snippet, windowSize = 5) {
     // Break the note into words
     const noteWords = note.split(/\s+/);
@@ -327,101 +292,42 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-function getKeywords(text, numKeywords = 10) {
-    const sentences = text.split('. ');
-    const wordFrequency = {};
-    const documentFrequency = {};
-
-    // Calculate word frequency and document frequency
-    sentences.forEach(sentence => {
-        const words = sentence.toLowerCase().split(/\W+/);
-        const uniqueWords = new Set(words);
-        uniqueWords.forEach(word => {
-            if (word.length > 3) {
-                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
-                documentFrequency[word] = (documentFrequency[word] || 0) + 1;
-            }
+// Function to scrape page content
+>>>>>>>>> Temporary merge branch 2
+function scrapePageContent(callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+<<<<<<<<< Temporary merge branch 1
+            function: () => document.body.innerText
+        }, (results) => {
+            const content = (results && results[0] && results[0].result) || 'Failed to scrape content.';
+            callback({ content });
         });
     });
-
-    const numSentences = sentences.length;
-    const keywordScores = {};
-
-    // Calculate TF-IDF scores
-    for (const word in wordFrequency) {
-        const tf = wordFrequency[word];
-        const idf = Math.log(numSentences / (documentFrequency[word] || 1));
-        keywordScores[word] = tf * idf;
-    }
-
-    // Return top keywords
-    return Object.keys(keywordScores)
-        .sort((a, b) => keywordScores[b] - keywordScores[a])
-        .slice(0, numKeywords);
 }
 
-function summariseContent(text, maxSentences = 3) {
-    const sentences = text.split('. ');
-    const wordFrequency = {};
-
-    // Calculate word frequency
-    sentences.forEach(sentence => {
-        const words = sentence.toLowerCase().split(/\W+/);
-        words.forEach(word => {
-            if (word.length > 3) {
-                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+  
+=========
+            function: () => {
+                // Get the main content of the page
+                const bodyText = document.body.innerText;
+                return bodyText.split('\n').filter(line => line.trim() !== ""); // Split and filter
             }
+        }, (results) => {
+            if (chrome.runtime.lastError) {
+                console.error('Error scraping page:', chrome.runtime.lastError);
+                callback({ contentList: [], error: 'Could not scrape content.' });
+                return;
+            }
+
+            const content = (results && results[0] && results[0].result) || [];
+            console.log('Scraped Content:', content); // Log for debugging
+            contentList = content; // Store the scraped content
+
+            // Return the processed content list
+            callback({ contentList });
         });
     });
-
-    // Score sentences based on word frequency
-    const sentenceScores = sentences.map(sentence => {
-        const words = sentence.toLowerCase().split(/\W+/);
-        let score = 0;
-        words.forEach(word => {
-            if (wordFrequency[word]) {
-                score += wordFrequency[word];
-            }
-        });
-        return { sentence, score };
-    });
-
-    // Sort sentences by score and return the top ones
-    return sentenceScores
-        .sort((a, b) => b.score - a.score)
-        .slice(0, maxSentences)
-        .map(item => item.sentence)
-        .join('. ');
 }
-
-// Trims the summary to a maximum of 200 words
-function trimToWordLimit(text, maxWords = 200) {
-    const words = text.split(/\s+/);  // Split text by spaces
-    if (words.length > maxWords) {
-        return words.slice(0, maxWords).join(' ') + '...';  // Return first 200 words
-    }
-    return text;  // If fewer than 200 words, return the original text
-}
-
-function summariseText(summary, apiKey, apiUrl) {
-
-    console.log(summary);
-
-    const requestBody = {
-        key: apiKey,
-        text: summary
-    };
-
-    return fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    });
-}
+>>>>>>>>> Temporary merge branch 2
