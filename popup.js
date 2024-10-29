@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById("plagiarismResult").textContent = response.error;
                 } 
                 else {
-                    document.getElementById("plagiarismResult").textContent = "Could not generate plagiarism.";
+                    document.getElementById("plagiarismResult").textContent = "Plagiarism not found in note content.";
                 }
             });
         });
