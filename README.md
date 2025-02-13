@@ -2,7 +2,8 @@
 
 The extension's action icon opens a page that allows you to create new notes, save them, edit them and delete them. 
 
-<img src="screenshot.png" height=300 alt="Screenshot showing the chrome.readingList API demo running in Chrome.">
+## Watch the Demo Video here
+[![Note-Taking Google Chrome Extension](https://img.youtube.com/vi/PKNFIc6VL-A/0.jpg)](https://www.youtube.com/watch?v=PKNFIc6VL-A)
 
 ## Running this extension
 
